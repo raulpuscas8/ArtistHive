@@ -1,20 +1,20 @@
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
+import { StatusBar as ExpoStatusBar } from "expo-status-bar";
+import React from "react";
+import {
+  StatusBar,
+  StyleSheet,
+  SafeAreaView,
+  Text,
+  View,
+  Platform,
+} from "react-native";
+import { ArtistScreen } from "./src/features/hive/screens/artist.screen";
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text> The beggining of ArtistHive!!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <>
+      <ArtistScreen />
+      <ExpoStatusBar style="auto" />
+    </>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});

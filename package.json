@@ -9,13 +9,19 @@
     "web": "expo start --web"
   },
   "dependencies": {
-    "expo": "~52.0.37",
     "expo-status-bar": "~2.0.1",
     "react": "^18.3.1",
-    "react-native": "^0.76.7"
+    "react-native": "^0.76.7",
+    "react-native-paper": "^5.13.1",
+    "react-native-safe-area-context": "^5.3.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0"
+    "@babel/core": "^7.20.0",
+    "@eslint/js": "^9.22.0",
+    "eslint": "^9.22.0",
+    "eslint-plugin-react": "^7.37.4",
+    "expo": "^52.0.37",
+    "globals": "^16.0.0"
   },
   "private": true
 }
