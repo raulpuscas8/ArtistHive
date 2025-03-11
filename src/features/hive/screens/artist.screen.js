@@ -2,30 +2,30 @@ import React from "react";
 import { Searchbar } from "react-native-paper";
 import { StatusBar, StyleSheet, SafeAreaView, Text, View } from "react-native";
 
-import { ArtistInfo } from "../components/artist-info.component";
+import { ArtistInfoCard } from "../components/artist-info-card.component";
+import styled from "styled-components/native";
+
+const SafeArea = styled(SafeAreaView)`
+  flex: 1;
+  ${StatusBar.currentHeight && `margin-top: ${StatusBar.currentHeight}px`};
+`;
+
+const SearchContainer = styled.View`
+  padding: ${(props) => props.theme.space[3]};
+`;
+
+const ArtistListContainer = styled.View`
+  flex: 1;
+  padding: ${(props) => props.theme.space[3]};
+`;
 
 export const ArtistScreen = () => (
-  <SafeAreaView style={styles.container}>
-    <View style={styles.search}>
+  <SafeArea>
+    <SearchContainer>
       <Searchbar />
-    </View>
-    <View style={styles.list}>
-      <ArtistInfo />
-    </View>
-  </SafeAreaView>
+    </SearchContainer>
+    <ArtistListContainer>
+      <ArtistInfoCard />
+    </ArtistListContainer>
+  </SafeArea>
 );
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    marginTop: StatusBar.currentHeight,
-  },
-  search: {
-    padding: 16,
-  },
-  list: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: "blue",
-  },
-});
