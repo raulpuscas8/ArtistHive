@@ -20,6 +20,7 @@
     "react-native": "^0.76.7",
     "react-native-paper": "^5.13.1",
     "react-native-safe-area-context": "^5.3.0",
+    "react-native-svg": "^15.8.0",
     "styled-components": "^6.1.15"
   },
   "devDependencies": {
@@ -28,7 +29,8 @@
     "eslint": "^9.22.0",
     "eslint-plugin-react": "^7.37.4",
     "expo": "^52.0.37",
-    "globals": "^16.0.0"
+    "globals": "^16.0.0",
+    "react-native-svg-transformer": "^1.5.0"
   },
   "private": true
 }
