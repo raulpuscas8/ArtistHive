@@ -15,6 +15,7 @@ import { theme } from "./src/infrastructure/theme";
 import { ArtistScreen } from "./src/features/hive/screens/artist.screen";
 import { SafeArea } from "./src/components/utility/safe-area.component";
 import { Ionicons } from "@expo/vector-icons";
+import { artistsRequest } from "./src/services/hive/artists.service";
 
 const Tab = createBottomTabNavigator();
 
