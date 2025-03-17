@@ -1,7 +1,7 @@
 import { mocks, mockImages } from "./mock";
 import camelize from "camelize";
 
-export const artistsRequest = (location = "37.7749295,-122.4194155") => {
+export const artistsRequest = (location) => {
   // console.log(JSON.stringify(camelize(mappedResults), null, 2));
 
   return new Promise((resolve, reject) => {
