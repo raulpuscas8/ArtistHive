@@ -20,6 +20,7 @@ export const artistsTransform = ({ results = [] }) => {
     });
     return {
       ...artist,
+      address: artist.vicinity,
       isOpenNow: artist.opening_hours && artist.opening_hours.open_now,
       isClosedTemporarily: artist.business_status === "CLOSED TEMPORARILY",
     };
