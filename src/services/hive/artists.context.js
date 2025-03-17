@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useContext,
-  createContext,
-  useEffect,
-  useMemo,
-} from "react";
+import React, { useState, useContext, createContext, useEffect } from "react";
 import { artistsRequest, artistsTransform } from "./artists.service";
 import { LocationContext } from "../location/location.context";
 
