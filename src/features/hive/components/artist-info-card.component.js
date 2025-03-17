@@ -16,7 +16,7 @@ import {
   Rating,
   Icon,
   Address,
-} from "./restaurant-info-card.styles.js";
+} from "./artist-info-card.styles.js";
 
 export const ArtistInfoCard = ({ artist = {} }) => {
   const {
@@ -54,6 +54,7 @@ export const ArtistInfoCard = ({ artist = {} }) => {
             </Spacer>
           </SectionEnd>
         </Section>
+        <Address>{address}</Address>
       </Info>
     </ArtistCard>
   );
