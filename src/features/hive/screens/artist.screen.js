@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { FlatList, ActivityIndicator } from "react-native";
+import { FlatList, ActivityIndicator, Pressable } from "react-native";
 
 import styled from "styled-components/native";
 import { Spacer } from "../../../components/spacer/spacer.component";
@@ -24,8 +24,8 @@ const LoadingContainer = styled.View`
   left: 50%;
 `;
 
-export const ArtistScreen = () => {
-  const { isLoading, error, artists } = useContext(ArtistsContext);
+export const ArtistScreen = ({ navigation }) => {
+  const { isLoading, artists } = useContext(ArtistsContext);
   return (
     <SafeArea>
       {isLoading && (
@@ -38,9 +38,11 @@ export const ArtistScreen = () => {
         data={artists}
         renderItem={({ item }) => {
           return (
-            <Spacer position="bottom" size="large">
-              <ArtistInfoCard artist={item} />
-            </Spacer>
+            <Pressable onPress={() => navigation.navigate("ArtistDetail")}>
+              <Spacer position="bottom" size="large">
+                <ArtistInfoCard restaurant={item} />
+              </Spacer>
+            </Pressable>
           );
         }}
         keyExtractor={(item) => item.name}
