@@ -15,7 +15,7 @@ import { theme } from "./src/infrastructure/theme";
 import { ArtistScreen } from "./src/features/hive/screens/artist.screen";
 import { SafeArea } from "./src/components/utility/safe-area.component";
 import { Ionicons } from "@expo/vector-icons";
-import { artistsRequest } from "./src/services/hive/artists.service";
+import { ArtistsContextProvider } from "./src/services/hive/artists.context";
 
 const Tab = createBottomTabNavigator();
 
@@ -61,19 +61,21 @@ export default function App() {
   return (
     <>
       <ThemeProvider theme={theme}>
-        <NavigationContainer>
-          <Tab.Navigator
-            screenOptions={createScreenOptions}
-            tabBarOptions={{
-              activeTintColor: "tomato",
-              inactiveTintColor: "gray",
-            }}
-          >
-            <Tab.Screen name="Artists" component={ArtistScreen} />
-            <Tab.Screen name="Map" component={Map} />
-            <Tab.Screen name="Settings" component={Settings} />
-          </Tab.Navigator>
-        </NavigationContainer>
+        <ArtistsContextProvider>
+          <NavigationContainer>
+            <Tab.Navigator
+              screenOptions={createScreenOptions}
+              tabBarOptions={{
+                activeTintColor: "tomato",
+                inactiveTintColor: "gray",
+              }}
+            >
+              <Tab.Screen name="Artists" component={ArtistScreen} />
+              <Tab.Screen name="Map" component={Map} />
+              <Tab.Screen name="Settings" component={Settings} />
+            </Tab.Navigator>
+          </NavigationContainer>
+        </ArtistsContextProvider>
       </ThemeProvider>
       <ExpoStatusBar style="auto" />
     </>
