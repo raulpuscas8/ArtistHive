@@ -6,7 +6,7 @@ import {
 } from "@react-navigation/stack";
 
 import { ArtistScreen } from "../../features/hive/screens/artist.screen";
-import { Text } from "react-native";
+import { ArtistDetailScreen } from "../../features/hive/screens/artist-detail.screen";
 
 const ArtistStack = createStackNavigator();
 
@@ -19,10 +19,7 @@ export const ArtistsNavigator = () => {
       }}
     >
       <ArtistStack.Screen name="Artists" component={ArtistScreen} />
-      <ArtistStack.Screen
-        name="ArtistDetail"
-        component={() => <Text>Artist Detail</Text>}
-      />
+      <ArtistStack.Screen name="ArtistDetail" component={ArtistDetailScreen} />
     </ArtistStack.Navigator>
   );
 };
