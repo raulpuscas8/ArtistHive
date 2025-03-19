@@ -1,5 +1,10 @@
 import React, { useContext } from "react";
-import { FlatList, ActivityIndicator, Pressable } from "react-native";
+import {
+  FlatList,
+  ActivityIndicator,
+  Pressable,
+  TouchableOpacity,
+} from "react-native";
 
 import styled from "styled-components/native";
 import { Spacer } from "../../../components/spacer/spacer.component";
@@ -38,11 +43,13 @@ export const ArtistScreen = ({ navigation }) => {
         data={artists}
         renderItem={({ item }) => {
           return (
-            <Pressable onPress={() => navigation.navigate("ArtistDetail")}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate("ArtistDetail")}
+            >
               <Spacer position="bottom" size="large">
                 <ArtistInfoCard restaurant={item} />
               </Spacer>
-            </Pressable>
+            </TouchableOpacity>
           );
         }}
         keyExtractor={(item) => item.name}
