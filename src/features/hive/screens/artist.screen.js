@@ -46,12 +46,12 @@ export const ArtistScreen = ({ navigation }) => {
             <TouchableOpacity
               onPress={() =>
                 navigation.navigate("ArtistDetail", {
-                  restaurant: item,
+                  artist: item,
                 })
               }
             >
               <Spacer position="bottom" size="large">
-                <ArtistInfoCard restaurant={item} />
+                <ArtistInfoCard artist={item} />
               </Spacer>
             </TouchableOpacity>
           );
