@@ -13,7 +13,7 @@ const Map = styled(MapView)`
   width: 100%;
 `;
 
-export const MapScreen = () => {
+export const MapScreen = ({ navigation }) => {
   const { location } = useContext(LocationContext);
   const { artists = [] } = useContext(ArtistsContext);
 
@@ -53,7 +53,15 @@ export const MapScreen = () => {
                 longitude: artist.geometry.location.lng,
               }}
             >
-              <Callout>
+              <Callout
+                onPress={() => {
+                  console.log("Navigating to ArtistDetail with:", artist);
+                  navigation.navigate("Artists", {
+                    screen: "ArtistDetail",
+                    params: { artist },
+                  });
+                }}
+              >
                 <MapCallout artist={artist} />
               </Callout>
             </Marker>
