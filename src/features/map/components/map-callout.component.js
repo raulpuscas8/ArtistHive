@@ -1,5 +1,4 @@
 import React from "react";
-import styled from "styled-components/native";
+import { CompactArtistInfo } from "../../../components/hive/compact-artist-info.component";
 
-const MyText = styled.Text``;
-export const MapCallout = ({ artist }) => <MyText>{artist.name}</MyText>;
+export const MapCallout = ({ artist }) => <CompactArtistInfo artist={artist} />;
