@@ -25,8 +25,8 @@ const Item = styled.View`
 
 const isAndroid = Platform.OS === "android";
 
-export const CompactArtistInfo = ({ artist }) => {
-  const Image = isAndroid ? CompactWebview : CompactImage;
+export const CompactArtistInfo = ({ artist, isMap }) => {
+  const Image = isAndroid && isMap ? CompactWebview : CompactImage;
 
   return (
     <Item>
