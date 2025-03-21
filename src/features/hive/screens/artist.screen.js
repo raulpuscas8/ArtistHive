@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import {
   FlatList,
   ActivityIndicator,
@@ -13,6 +13,8 @@ import { ArtistsContext } from "../../../services/hive/artists.context";
 import { MD3Colors } from "react-native-paper";
 import { Search } from "../components/search.component";
 import { ArtistInfoCard } from "../components/artist-info-card.component";
+import { FavouritesBar } from "../../../components/favourites/favourites-bar.component";
+import { FavouritesContext } from "../../../services/favourites/favourites.context";
 
 const ArtistList = styled(FlatList).attrs({
   contentContainerStyle: {
@@ -31,6 +33,9 @@ const LoadingContainer = styled.View`
 
 export const ArtistScreen = ({ navigation }) => {
   const { isLoading, artists } = useContext(ArtistsContext);
+  const { favourites } = useContext(FavouritesContext);
+  const [isToggled, setIsToggled] = useState(false);
+
   return (
     <SafeArea>
       {isLoading && (
@@ -38,7 +43,16 @@ export const ArtistScreen = ({ navigation }) => {
           <Loading size={50} animating={true} color={MD3Colors.primary10} />
         </LoadingContainer>
       )}
-      <Search />
+      <Search
+        isFavouritesToggled={isToggled}
+        onFavouritesToggle={() => setIsToggled(!isToggled)}
+      />
+      {isToggled && (
+        <FavouritesBar
+          favourites={favourites}
+          onNavigate={navigation.navigate}
+        />
+      )}
       <ArtistList
         data={artists}
         renderItem={({ item }) => {

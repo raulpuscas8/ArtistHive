@@ -6,6 +6,8 @@ import open from "../../../../assets/open";
 import { SvgXml } from "react-native-svg";
 import { Spacer } from "../../../components/spacer/spacer.component";
 import { Text } from "../../../components/typography/text.component";
+import { View } from "react-native";
+import { Favourite } from "../../../components/favourites/favourite.component";
 
 import {
   ArtistCard,
@@ -34,7 +36,10 @@ export const ArtistInfoCard = ({ artist = {} }) => {
 
   return (
     <ArtistCard elevation={5}>
-      <ArtistCardCover key={name} source={{ uri: photos[0] }} />
+      <View>
+        <Favourite artist={artist} />
+        <ArtistCardCover key={name} source={{ uri: photos[0] }} />
+      </View>
       <Info>
         <Text variant="label">{name}</Text>
         <Section>
