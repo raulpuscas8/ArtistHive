@@ -30,7 +30,8 @@
     "styled-components": "^6.1.15",
     "xml2js": "^0.6.2",
     "react-native-maps": "1.18.0",
-    "react-native-webview": "13.12.5"
+    "react-native-webview": "13.12.5",
+    "@react-native-async-storage/async-storage": "1.23.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
