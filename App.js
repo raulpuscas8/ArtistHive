@@ -14,6 +14,7 @@ import { LocationContextProvider } from "./src/services/location/location.contex
 import { AppNavigator } from "./src/infrastructure/navigation/app.navigator";
 import { FavouritesContextProvider } from "./src/services/favourites/favourites.context";
 import { Navigation } from "./src/infrastructure/navigation";
+import { AuthenticationContextProvider } from "./src/services/authentication/authentication.context";
 
 export default function App() {
   const [oswaldLoaded] = useOswald({
@@ -31,13 +32,15 @@ export default function App() {
   return (
     <>
       <ThemeProvider theme={theme}>
-        <FavouritesContextProvider>
-          <LocationContextProvider>
-            <ArtistsContextProvider>
-              <Navigation />
-            </ArtistsContextProvider>
-          </LocationContextProvider>
-        </FavouritesContextProvider>
+        <AuthenticationContextProvider>
+          <FavouritesContextProvider>
+            <LocationContextProvider>
+              <ArtistsContextProvider>
+                <Navigation />
+              </ArtistsContextProvider>
+            </LocationContextProvider>
+          </FavouritesContextProvider>
+        </AuthenticationContextProvider>
       </ThemeProvider>
       <ExpoStatusBar style="auto" />
     </>
