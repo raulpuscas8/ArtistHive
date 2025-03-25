@@ -1,4 +1,4 @@
-import React, { useState, createContext, useRef } from "react";
+import React, { useState, createContext, useRef, useEffect } from "react";
 import {
   signOut,
   createUserWithEmailAndPassword,
@@ -16,43 +16,57 @@ export const AuthenticationContextProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const auth = useRef(getAuth()).current;
 
-  onAuthStateChanged(auth, (usr) => {
-    if (usr) {
-      setUser(usr);
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (usr) => {
+      if (usr) {
+        setUser(usr);
+      }
       setIsLoading(false);
-    } else {
-      setIsLoading(false);
-    }
-  });
+    });
+
+    return () => unsubscribe();
+  }, [auth]);
 
   const onLogin = (email, password) => {
     setIsLoading(true);
-    loginRequest(auth, email, password)
-      .then((u) => {
-        setUser(u);
-        setIsLoading(false);
-      })
-      .catch((e) => {
-        setIsLoading(false);
-        setError(e.toString());
-      });
+    setError(null);
+
+    setTimeout(() => {
+      loginRequest(auth, email, password)
+        .then((u) => {
+          setUser(u);
+          setIsLoading(false);
+        })
+        .catch((e) => {
+          setIsLoading(false);
+          setError(e.message || "Login failed");
+        });
+    }, 300);
   };
 
   const onRegister = (email, password, repeatedPassword) => {
     setIsLoading(true);
+    setError(null);
+
     if (password !== repeatedPassword) {
-      setError("Error: Passwords do not match");
+      setTimeout(() => {
+        setIsLoading(false);
+        setError("Error: Passwords do not match");
+      }, 200);
       return;
     }
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((u) => {
-        setUser(u);
-        setIsLoading(false);
-      })
-      .catch((e) => {
-        setIsLoading(false);
-        setError(e.toString());
-      });
+
+    setTimeout(() => {
+      createUserWithEmailAndPassword(auth, email, password)
+        .then((u) => {
+          setUser(u);
+          setIsLoading(false);
+        })
+        .catch((e) => {
+          setIsLoading(false);
+          setError(e.message || "Registration failed");
+        });
+    }, 200);
   };
 
   const onLogout = () => {

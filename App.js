@@ -15,6 +15,7 @@ import { AppNavigator } from "./src/infrastructure/navigation/app.navigator";
 import { FavouritesContextProvider } from "./src/services/favourites/favourites.context";
 import { Navigation } from "./src/infrastructure/navigation";
 import { AuthenticationContextProvider } from "./src/services/authentication/authentication.context";
+import { initializeApp } from "firebase/app";
 
 export default function App() {
   const [oswaldLoaded] = useOswald({
