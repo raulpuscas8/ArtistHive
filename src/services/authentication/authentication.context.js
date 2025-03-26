@@ -52,7 +52,7 @@ export const AuthenticationContextProvider = ({ children }) => {
       setTimeout(() => {
         setIsLoading(false);
         setError("Error: Passwords do not match");
-      }, 200);
+      }, 100);
       return;
     }
 
@@ -66,7 +66,7 @@ export const AuthenticationContextProvider = ({ children }) => {
           setIsLoading(false);
           setError(e.message || "Registration failed");
         });
-    }, 200);
+    }, 100);
   };
 
   const onLogout = () => {
