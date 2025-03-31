@@ -1,7 +1,6 @@
-import React, { useContext } from "react";
+import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
-import { Text, Button } from "react-native";
 
 import { SafeArea } from "../../components/utility/safe-area.component";
 import { ArtistsNavigator } from "./artists.navigator";
@@ -10,6 +9,7 @@ import { AuthenticationContext } from "../../services/authentication/authenticat
 import { ArtistsContextProvider } from "../../services/hive/artists.context";
 import { LocationContextProvider } from "../../services/location/location.context";
 import { FavouritesContextProvider } from "../../services/favourites/favourites.context";
+import { SettingsNavigator } from "./settings.navigator";
 
 const Tab = createBottomTabNavigator();
 
@@ -45,7 +45,7 @@ export const AppNavigator = () => (
         >
           <Tab.Screen name="Artists" component={ArtistsNavigator} />
           <Tab.Screen name="Map" component={MapScreen} />
-          <Tab.Screen name="Settings" component={SettingsScreen} />
+          <Tab.Screen name="Settings" component={SettingsNavigator} />
         </Tab.Navigator>
       </ArtistsContextProvider>
     </LocationContextProvider>
