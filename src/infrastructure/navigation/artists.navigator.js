@@ -18,7 +18,7 @@ export const ArtistsNavigator = () => {
         ...TransitionPresets.ModalPresentationIOS,
       }}
     >
-      <ArtistStack.Screen name="Artists" component={ArtistScreen} />
+      <ArtistStack.Screen name="ArtistsList" component={ArtistScreen} />
       <ArtistStack.Screen name="ArtistDetail" component={ArtistDetailScreen} />
     </ArtistStack.Navigator>
   );

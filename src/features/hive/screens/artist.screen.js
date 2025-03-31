@@ -15,12 +15,7 @@ import { Search } from "../components/search.component";
 import { ArtistInfoCard } from "../components/artist-info-card.component";
 import { FavouritesBar } from "../../../components/favourites/favourites-bar.component";
 import { FavouritesContext } from "../../../services/favourites/favourites.context";
-
-const ArtistList = styled(FlatList).attrs({
-  contentContainerStyle: {
-    padding: 16,
-  },
-})``;
+import { ArtistList } from "../components/artist-list.styles";
 
 const Loading = styled(ActivityIndicator)`
   margin-left: -25px;
