@@ -1,10 +1,5 @@
 import React, { useContext, useState } from "react";
-import {
-  FlatList,
-  ActivityIndicator,
-  Pressable,
-  TouchableOpacity,
-} from "react-native";
+import { ActivityIndicator, Pressable, TouchableOpacity } from "react-native";
 
 import styled from "styled-components/native";
 import { Spacer } from "../../../components/spacer/spacer.component";
@@ -16,6 +11,7 @@ import { ArtistInfoCard } from "../components/artist-info-card.component";
 import { FavouritesBar } from "../../../components/favourites/favourites-bar.component";
 import { FavouritesContext } from "../../../services/favourites/favourites.context";
 import { ArtistList } from "../components/artist-list.styles";
+import { FadeInView } from "../../../components/animations/fade.animation";
 
 const Loading = styled(ActivityIndicator)`
   margin-left: -25px;
@@ -48,6 +44,7 @@ export const ArtistScreen = ({ navigation }) => {
           onNavigate={navigation.navigate}
         />
       )}
+
       <ArtistList
         data={artists}
         renderItem={({ item }) => {
@@ -60,7 +57,9 @@ export const ArtistScreen = ({ navigation }) => {
               }
             >
               <Spacer position="bottom" size="large">
-                <ArtistInfoCard artist={item} />
+                <FadeInView>
+                  <ArtistInfoCard artist={item} />
+                </FadeInView>
               </Spacer>
             </TouchableOpacity>
           );
