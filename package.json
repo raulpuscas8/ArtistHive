@@ -35,7 +35,8 @@
     "semver": "^7.7.1",
     "styled-components": "^6.1.15",
     "xml2js": "^0.6.2",
-    "expo-camera": "~16.0.18"
+    "expo-camera": "~16.0.18",
+    "expo-image-manipulator": "~13.0.6"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
