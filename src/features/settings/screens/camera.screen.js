@@ -1,10 +1,15 @@
-import React, { useState } from "react";
+import React, { useRef, useState, useEffect, useContext } from "react";
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
 import { View, Text, Button, TouchableOpacity, StyleSheet } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as ImageManipulator from "expo-image-manipulator"; // Import ImageManipulator
+import { AuthenticationContext } from "../../../services/authentication/authentication.context";
 
-export const CameraScreen = () => {
-  const [facing, setFacing] = useState("back"); // Default to back camera
+export const CameraScreen = ({ navigation }) => {
+  const [facing, setFacing] = useState("back");
   const [permission, requestPermission] = useCameraPermissions();
+  const { user } = useContext(AuthenticationContext);
+  const cameraRef = useRef(null);
 
   if (!permission) {
     return <View />;
@@ -25,12 +30,34 @@ export const CameraScreen = () => {
     setFacing((current) => (current === "back" ? "front" : "back"));
   };
 
+  const takePicture = async () => {
+    if (cameraRef.current) {
+      const photo = await cameraRef.current.takePictureAsync();
+
+      // If front camera, flip the photo horizontally
+      let finalPhoto = photo;
+      if (facing === "front") {
+        finalPhoto = await ImageManipulator.manipulateAsync(
+          photo.uri,
+          [{ flip: ImageManipulator.FlipType.Horizontal }], // Flip image
+          { compress: 1, format: ImageManipulator.SaveFormat.JPEG }
+        );
+      }
+
+      await AsyncStorage.setItem(`${user.uid}-photo`, finalPhoto.uri);
+      navigation.goBack();
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <CameraView style={styles.camera} facing={facing}>
+      <CameraView ref={cameraRef} style={styles.camera} facing={facing}>
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
             <Text style={styles.text}>Flip Camera</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.captureButton} onPress={takePicture}>
+            <Text style={styles.text}>Capture</Text>
           </TouchableOpacity>
         </View>
       </CameraView>
@@ -53,16 +80,23 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flex: 1,
     flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
     backgroundColor: "transparent",
-    margin: 64,
+    padding: 20,
   },
   button: {
-    flex: 1,
-    alignSelf: "flex-end",
-    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    padding: 10,
+    borderRadius: 5,
+  },
+  captureButton: {
+    backgroundColor: "red",
+    padding: 15,
+    borderRadius: 50,
   },
   text: {
-    fontSize: 24,
+    fontSize: 16,
     fontWeight: "bold",
     color: "white",
   },
