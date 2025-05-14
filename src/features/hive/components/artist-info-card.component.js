@@ -1,13 +1,13 @@
+// src/features/hive/components/artist-info-card.component.js
+
 import React from "react";
-import { StatusBar as ExpoStatusBar } from "expo-status-bar";
-import { ThemeProvider } from "styled-components/native";
-import star from "../../../../assets/star";
-import open from "../../../../assets/open";
+import { View } from "react-native";
 import { SvgXml } from "react-native-svg";
 import { Spacer } from "../../../components/spacer/spacer.component";
 import { Text } from "../../../components/typography/text.component";
-import { View } from "react-native";
 import { Favourite } from "../../../components/favourites/favourite.component";
+import star from "../../../../assets/star";
+import open from "../../../../assets/open";
 
 import {
   ArtistCard,
@@ -31,6 +31,9 @@ export const ArtistInfoCard = ({ artist = {} }) => {
     isClosedTemporarily = true,
     placeId,
   } = artist;
+
+  // **DEBUG LOG**: inspect what Firestore actually sent in `photos`
+  console.log("ARTIST PHOTOS:", photos);
 
   const ratingArray = Array.from(new Array(Math.floor(rating)));
 

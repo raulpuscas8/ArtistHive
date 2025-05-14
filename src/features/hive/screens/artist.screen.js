@@ -1,7 +1,8 @@
+// src/features/hive/screens/artist.screen.js
 import React, { useContext, useState } from "react";
-import { ActivityIndicator, Pressable, TouchableOpacity } from "react-native";
-
+import { ActivityIndicator, TouchableOpacity, Text } from "react-native";
 import styled from "styled-components/native";
+
 import { Spacer } from "../../../components/spacer/spacer.component";
 import { SafeArea } from "../../../components/utility/safe-area.component";
 import { ArtistsContext } from "../../../services/hive/artists.context";
@@ -16,6 +17,7 @@ import { FadeInView } from "../../../components/animations/fade.animation";
 const Loading = styled(ActivityIndicator)`
   margin-left: -25px;
 `;
+
 const LoadingContainer = styled.View`
   position: absolute;
   top: 50%;
@@ -23,21 +25,34 @@ const LoadingContainer = styled.View`
 `;
 
 export const ArtistScreen = ({ navigation }) => {
-  const { isLoading, artists } = useContext(ArtistsContext);
+  const { isLoading, artists, error } = useContext(ArtistsContext);
   const { favourites } = useContext(FavouritesContext);
   const [isToggled, setIsToggled] = useState(false);
 
+  // 1) Error state
+  if (error) {
+    return (
+      <SafeArea>
+        <Text>Something went wrong: {error.message}</Text>
+      </SafeArea>
+    );
+  }
+
   return (
     <SafeArea>
+      {/* 2) Loading spinner */}
       {isLoading && (
         <LoadingContainer>
-          <Loading size={50} animating={true} color={MD3Colors.primary10} />
+          <Loading size={50} animating color={MD3Colors.primary10} />
         </LoadingContainer>
       )}
+
+      {/* 3) Search + favourites toggle */}
       <Search
         isFavouritesToggled={isToggled}
         onFavouritesToggle={() => setIsToggled(!isToggled)}
       />
+
       {isToggled && (
         <FavouritesBar
           favourites={favourites}
@@ -45,26 +60,25 @@ export const ArtistScreen = ({ navigation }) => {
         />
       )}
 
+      {/* 4) Artist list from Firestore */}
       <ArtistList
         data={artists}
-        renderItem={({ item }) => {
-          return (
-            <TouchableOpacity
-              onPress={() =>
-                navigation.navigate("ArtistDetail", {
-                  artist: item,
-                })
-              }
-            >
-              <Spacer position="bottom" size="large">
-                <FadeInView>
-                  <ArtistInfoCard artist={item} />
-                </FadeInView>
-              </Spacer>
-            </TouchableOpacity>
-          );
-        }}
-        keyExtractor={(item) => item.name}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate("ArtistDetail", {
+                artist: item,
+              })
+            }
+          >
+            <Spacer position="bottom" size="large">
+              <FadeInView>
+                <ArtistInfoCard artist={item} />
+              </FadeInView>
+            </Spacer>
+          </TouchableOpacity>
+        )}
+        keyExtractor={(item) => item.id} // use the Firestore doc id
       />
     </SafeArea>
   );
