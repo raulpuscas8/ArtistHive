@@ -13,6 +13,7 @@ import { SafeArea } from "../../components/utility/safe-area.component";
 
 import { AppNavigator } from "./app.navigator";
 import { AuthenticationContext } from "../../services/authentication/authentication.context";
+import { AddArtistScreen } from "../../features/hive/screens/add-artist.screen";
 
 const Drawer = createDrawerNavigator();
 
@@ -59,6 +60,7 @@ export const DrawerNavigator = () => {
       drawerContent={(props) => <CustomDrawerContent {...props} />}
     >
       <Drawer.Screen name="Home" component={AppNavigator} />
+      <Drawer.Screen name="Add Artist" component={AddArtistScreen} />
     </Drawer.Navigator>
   );
 };
