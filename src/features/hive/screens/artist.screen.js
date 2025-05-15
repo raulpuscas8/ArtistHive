@@ -1,6 +1,6 @@
 // src/features/hive/screens/artist.screen.js
 
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import {
   ActivityIndicator,
   TouchableOpacity,
@@ -51,6 +51,11 @@ export const ArtistScreen = ({ navigation }) => {
 
   const [isFavouritesToggled, setIsFavouritesToggled] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
+
+  // DEBUG: inspect the artists payload
+  useEffect(() => {
+    console.log("🔥 artists payload:", artists);
+  }, [artists]);
 
   const categories = [
     "Painting",
@@ -122,11 +127,11 @@ export const ArtistScreen = ({ navigation }) => {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        style={{ flexGrow: 0 }} // don’t expand vertically
+        style={{ flexGrow: 0 }}
         contentContainerStyle={{
           paddingHorizontal: 16,
-          flexGrow: 0, // keep content tight
-          alignItems: "center", // vertical centering
+          flexGrow: 0,
+          alignItems: "center",
         }}
       >
         <CategoryFilterContainer>

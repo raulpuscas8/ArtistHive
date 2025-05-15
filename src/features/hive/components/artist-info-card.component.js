@@ -44,12 +44,29 @@ export const ArtistInfoCard = ({ artist = {} }) => {
   const {
     name = "Some Artist",
     icon = "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/lodging-71.png",
-    photos = ["https://via.placeholder.com/400"],
+    photos = [],
     address = "100 some random street",
     rating = 4,
     category = "Other",
     placeId,
   } = artist;
+
+  // filter out any entries that aren't valid HTTP(S) URLs with a hostname containing a dot
+  const validPhotos = photos.filter((p) => {
+    if (typeof p !== "string") return false;
+    if (!/^https?:\/\//i.test(p)) return false;
+    try {
+      const url = new URL(p);
+      return url.hostname.includes(".");
+    } catch {
+      return false;
+    }
+  });
+
+  // if no valid URLs, fall back to placeholder
+  const displayPhotos = validPhotos.length
+    ? validPhotos
+    : ["https://via.placeholder.com/400"];
 
   const ratingArray = Array.from(new Array(Math.floor(rating)));
   const catIconName = categoryIcons[category] || categoryIcons.Other;
@@ -58,7 +75,7 @@ export const ArtistInfoCard = ({ artist = {} }) => {
     <ArtistCard elevation={5}>
       <View>
         <Favourite artist={artist} />
-        <ArtistCardCover source={{ uri: photos[0] }} />
+        <ArtistCardCover source={{ uri: displayPhotos[0] }} />
       </View>
       <Info>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
