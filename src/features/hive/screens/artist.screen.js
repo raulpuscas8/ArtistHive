@@ -1,7 +1,14 @@
 // src/features/hive/screens/artist.screen.js
+
 import React, { useContext, useState } from "react";
-import { ActivityIndicator, TouchableOpacity, Text } from "react-native";
-import styled from "styled-components/native";
+import {
+  ActivityIndicator,
+  TouchableOpacity,
+  Text,
+  ScrollView,
+} from "react-native";
+import styled, { useTheme } from "styled-components/native";
+import { Ionicons } from "@expo/vector-icons";
 
 import { Spacer } from "../../../components/spacer/spacer.component";
 import { SafeArea } from "../../../components/utility/safe-area.component";
@@ -24,12 +31,61 @@ const LoadingContainer = styled.View`
   left: 50%;
 `;
 
+// remove vertical padding so it hugs the ScrollView height
+const CategoryFilterContainer = styled.View`
+  flex-direction: row;
+  padding: 0;
+`;
+
+const CategoryButton = styled(TouchableOpacity)`
+  margin: 0 ${({ theme }) => theme.space[2]};
+  align-items: center;
+
+  padding-top: ${({ theme }) => theme.space[1]};
+`;
+
 export const ArtistScreen = ({ navigation }) => {
+  const theme = useTheme();
   const { isLoading, artists, error } = useContext(ArtistsContext);
   const { favourites } = useContext(FavouritesContext);
-  const [isToggled, setIsToggled] = useState(false);
 
-  // 1) Error state
+  const [isFavouritesToggled, setIsFavouritesToggled] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
+  const categories = [
+    "Painting",
+    "Music",
+    "Sculpture",
+    "Photography",
+    "Digital Art",
+    "PrintMaking",
+    "Ceramics",
+    "Textile & Fiber",
+    "Jewelry & Wearables",
+    "Graphic Design & Illustration",
+    "Performance Art",
+    "Video & Animation",
+    "Crafts & Handmade",
+    "Other",
+  ];
+
+  const categoryIcons = {
+    Painting: "color-palette-outline",
+    Music: "musical-notes-outline",
+    Sculpture: "construct-outline",
+    Photography: "camera-outline",
+    "Digital Art": "desktop-outline",
+    PrintMaking: "print-outline",
+    Ceramics: "mud-outline",
+    "Textile & Fiber": "shirt-outline",
+    "Jewelry & Wearables": "diamond-outline",
+    "Graphic Design & Illustration": "brush-outline",
+    "Performance Art": "walk-outline",
+    "Video & Animation": "videocam-outline",
+    "Crafts & Handmade": "hand-left-outline",
+    Other: "help-circle-outline",
+  };
+
   if (error) {
     return (
       <SafeArea>
@@ -38,31 +94,75 @@ export const ArtistScreen = ({ navigation }) => {
     );
   }
 
+  const displayedArtists = selectedCategory
+    ? artists.filter((a) => a.category === selectedCategory)
+    : artists;
+
   return (
     <SafeArea>
-      {/* 2) Loading spinner */}
       {isLoading && (
         <LoadingContainer>
           <Loading size={50} animating color={MD3Colors.primary10} />
         </LoadingContainer>
       )}
 
-      {/* 3) Search + favourites toggle */}
+      {/* Search + Favourites toggle */}
       <Search
-        isFavouritesToggled={isToggled}
-        onFavouritesToggle={() => setIsToggled(!isToggled)}
+        isFavouritesToggled={isFavouritesToggled}
+        onFavouritesToggle={() => setIsFavouritesToggled(!isFavouritesToggled)}
       />
-
-      {isToggled && (
+      {isFavouritesToggled && (
         <FavouritesBar
           favourites={favourites}
           onNavigate={navigation.navigate}
         />
       )}
 
-      {/* 4) Artist list from Firestore */}
+      {/* 1. Category filter bar */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={{ flexGrow: 0 }} // don’t expand vertically
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          flexGrow: 0, // keep content tight
+          alignItems: "center", // vertical centering
+        }}
+      >
+        <CategoryFilterContainer>
+          {categories.map((cat) => {
+            const isSelected = selectedCategory === cat;
+            return (
+              <CategoryButton
+                key={cat}
+                onPress={() => setSelectedCategory(isSelected ? null : cat)}
+              >
+                <Ionicons
+                  name={categoryIcons[cat]}
+                  size={24}
+                  color={
+                    isSelected
+                      ? theme.colors.ui.primary
+                      : theme.colors.ui.disabled
+                  }
+                />
+                <Spacer position="top" size="small">
+                  <Text
+                    variant="caption"
+                    color={isSelected ? "ui.primary" : "ui.disabled"}
+                  >
+                    {cat}
+                  </Text>
+                </Spacer>
+              </CategoryButton>
+            );
+          })}
+        </CategoryFilterContainer>
+      </ScrollView>
+
+      {/* 2. Artist list, filtered */}
       <ArtistList
-        data={artists}
+        data={displayedArtists}
         renderItem={({ item }) => (
           <TouchableOpacity
             onPress={() =>
@@ -78,7 +178,7 @@ export const ArtistScreen = ({ navigation }) => {
             </Spacer>
           </TouchableOpacity>
         )}
-        keyExtractor={(item) => item.id} // use the Firestore doc id
+        keyExtractor={(item) => item.id}
       />
     </SafeArea>
   );

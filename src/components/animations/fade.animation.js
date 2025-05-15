@@ -1,25 +1,26 @@
+// src/components/animations/fade.animation.js
 import React, { useRef, useEffect } from "react";
 import { Animated } from "react-native";
 
-export const FadeInView = ({ duration = 1500, ...props }) => {
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+export const FadeInView = ({ duration = 200, style, children }) => {
+  const opacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    Animated.timing(fadeAnim, {
+    Animated.timing(opacity, {
       toValue: 1,
-      duration: duration,
+      duration,
       useNativeDriver: true,
     }).start();
-  }, [fadeAnim, duration]);
+  }, [opacity, duration]);
 
   return (
     <Animated.View
-      style={{
-        ...props.style,
-        opacity: fadeAnim,
-      }}
+      style={[
+        { opacity },
+        style, // preserve any parent‐passed styles
+      ]}
     >
-      {props.children}
+      {children}
     </Animated.View>
   );
 };
