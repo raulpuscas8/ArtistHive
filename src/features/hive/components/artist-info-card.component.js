@@ -6,8 +6,9 @@ import { SvgXml } from "react-native-svg";
 import { Spacer } from "../../../components/spacer/spacer.component";
 import { Text } from "../../../components/typography/text.component";
 import { Favourite } from "../../../components/favourites/favourite.component";
+import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "styled-components/native";
 import star from "../../../../assets/star";
-import open from "../../../../assets/open";
 
 import {
   ArtistCard,
@@ -20,31 +21,56 @@ import {
   Address,
 } from "./artist-info-card.styles.js";
 
+// map each category string to an Ionicon name
+const categoryIcons = {
+  Painting: "color-palette-outline",
+  Music: "musical-notes-outline",
+  Sculpture: "construct-outline",
+  Photography: "camera-outline",
+  "Digital Art": "desktop-outline",
+  PrintMaking: "print-outline",
+  Ceramics: "mud-outline",
+  "Textile & Fiber": "shirt-outline",
+  "Jewelry & Wearables": "diamond-outline",
+  "Graphic Design & Illustration": "brush-outline",
+  "Performance Art": "walk-outline",
+  "Video & Animation": "videocam-outline",
+  "Crafts & Handmade": "hand-left-outline",
+  Other: "help-circle-outline",
+};
+
 export const ArtistInfoCard = ({ artist = {} }) => {
+  const theme = useTheme();
   const {
     name = "Some Artist",
     icon = "https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/lodging-71.png",
-    photos = ["https://m.media-amazon.com/images/I/91LyD5TLnnL.jpg"],
+    photos = ["https://via.placeholder.com/400"],
     address = "100 some random street",
-    isOpenNow = true,
     rating = 4,
-    isClosedTemporarily = true,
+    category = "Other",
     placeId,
   } = artist;
 
-  // **DEBUG LOG**: inspect what Firestore actually sent in `photos`
-  console.log("ARTIST PHOTOS:", photos);
-
   const ratingArray = Array.from(new Array(Math.floor(rating)));
+  const catIconName = categoryIcons[category] || categoryIcons.Other;
 
   return (
     <ArtistCard elevation={5}>
       <View>
         <Favourite artist={artist} />
-        <ArtistCardCover key={name} source={{ uri: photos[0] }} />
+        <ArtistCardCover source={{ uri: photos[0] }} />
       </View>
       <Info>
-        <Text variant="label">{name}</Text>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <Text variant="label">{name}</Text>
+          <Spacer position="left" size="medium" />
+          <Ionicons
+            name={catIconName}
+            size={20}
+            color={theme.colors.ui.primary}
+          />
+        </View>
+
         <Section>
           <Rating>
             {ratingArray.map((_, i) => (
@@ -57,17 +83,12 @@ export const ArtistInfoCard = ({ artist = {} }) => {
             ))}
           </Rating>
           <SectionEnd>
-            {isClosedTemporarily && (
-              <Text variant="error">CLOSED TEMPORARILY</Text>
-            )}
-            <Spacer position="left" size="large">
-              {isOpenNow && <SvgXml xml={open} width={20} height={20} />}
-            </Spacer>
             <Spacer position="left" size="large">
               <Icon source={{ uri: icon }} />
             </Spacer>
           </SectionEnd>
         </Section>
+
         <Address>{address}</Address>
       </Info>
     </ArtistCard>

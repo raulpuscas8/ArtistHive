@@ -1,3 +1,5 @@
+// src/features/hive/screens/add-artist.screen.js
+
 import React, { useState } from "react";
 import {
   ScrollView,
@@ -8,6 +10,8 @@ import {
   Alert,
 } from "react-native";
 import styled from "styled-components/native";
+import { Picker } from "@react-native-picker/picker";
+
 import { SafeArea } from "../../../components/utility/safe-area.component";
 import { Text } from "../../../components/typography/text.component";
 import { db } from "../../../utils/firebase.config";
@@ -26,7 +30,25 @@ export const AddArtistScreen = () => {
   const [rating, setRating] = useState("");
   const [photoUrl, setPhotoUrl] = useState("");
   const [isOpenNow, setIsOpenNow] = useState(false);
+  const [category, setCategory] = useState("Painting");
   const [loading, setLoading] = useState(false);
+
+  const categories = [
+    "Painting",
+    "Music",
+    "Sculpture",
+    "Photography",
+    "Digital Art",
+    "PrintMaking",
+    "Ceramics",
+    "Textile & Fiber",
+    "Jewelry & Wearables",
+    "Graphic Design & Illustration",
+    "Performance Art",
+    "Video & Animation",
+    "Crafts & Handmade",
+    "Other",
+  ];
 
   const handleSubmit = async () => {
     if (!name || !address || !rating || !photoUrl) {
@@ -40,6 +62,7 @@ export const AddArtistScreen = () => {
         address,
         rating: parseFloat(rating),
         isOpenNow,
+        category,
         photos,
       });
       Alert.alert("Success", "Artist added!");
@@ -49,6 +72,7 @@ export const AddArtistScreen = () => {
       setRating("");
       setPhotoUrl("");
       setIsOpenNow(false);
+      setCategory("Painting");
     } catch (e) {
       console.error(e);
       Alert.alert("Error", e.message);
@@ -61,14 +85,14 @@ export const AddArtistScreen = () => {
       <ScrollView contentContainerStyle={{ padding: 16 }}>
         <Text variant="label">Name</Text>
         <Field
-          placeholder="e.g. Night Owl Jazz Club"
+          placeholder="e.g. Jane Doe"
           value={name}
           onChangeText={setName}
         />
 
         <Text variant="label">Address</Text>
         <Field
-          placeholder="e.g. 123 Main St, Cluj-Napoca"
+          placeholder="e.g. 123 Art St, Bucharest"
           value={address}
           onChangeText={setAddress}
         />
@@ -81,27 +105,31 @@ export const AddArtistScreen = () => {
           keyboardType="numeric"
         />
 
+        <Text variant="label">Category</Text>
+        <View
+          style={{
+            borderWidth: 1,
+            borderColor: "#ccc",
+            borderRadius: 4,
+            marginBottom: 16,
+          }}
+        >
+          <Picker
+            selectedValue={category}
+            onValueChange={(itemValue) => setCategory(itemValue)}
+          >
+            {categories.map((cat) => (
+              <Picker.Item label={cat} value={cat} key={cat} />
+            ))}
+          </Picker>
+        </View>
+
         <Text variant="label">Photos (comma-separated URLs)</Text>
         <Field
           placeholder="https://…jpg, https://…jpg"
           value={photoUrl}
           onChangeText={setPhotoUrl}
         />
-
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            marginBottom: 16,
-          }}
-        >
-          <Text>Open Now?</Text>
-          <Switch
-            style={{ marginLeft: 8 }}
-            value={isOpenNow}
-            onValueChange={setIsOpenNow}
-          />
-        </View>
 
         <Button
           title={loading ? "Adding..." : "Add Artist"}
