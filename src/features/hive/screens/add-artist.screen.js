@@ -33,14 +33,24 @@ const Field = styled(TextInput)`
 `;
 
 export const AddArtistScreen = () => {
-  // ←–– All of your states!
+  // basic info
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
   const [rating, setRating] = useState("");
-  const [photoUrl, setPhotoUrl] = useState("");
-  const [localPhotos, setLocalPhotos] = useState([]);
   const [isOpenNow, setIsOpenNow] = useState(false);
   const [category, setCategory] = useState("Painting");
+
+  // new fields
+  const [description, setDescription] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [website, setWebsite] = useState("");
+  const [priceRange, setPriceRange] = useState("");
+
+  // photos
+  const [photoUrl, setPhotoUrl] = useState("");
+  const [localPhotos, setLocalPhotos] = useState([]);
+
   const [loading, setLoading] = useState(false);
 
   const categories = [
@@ -97,13 +107,16 @@ export const AddArtistScreen = () => {
   };
 
   const handleSubmit = async () => {
+    // require the essential fields
     if (
       !name ||
       !address ||
-      !rating ||
+      !description ||
+      !email ||
+      !priceRange ||
       (!photoUrl.trim() && localPhotos.length === 0)
     ) {
-      return Alert.alert("All fields are required");
+      return Alert.alert("All required fields must be filled");
     }
     setLoading(true);
     try {
@@ -112,30 +125,42 @@ export const AddArtistScreen = () => {
         .split(",")
         .map((u) => u.trim())
         .filter(Boolean);
-      // upload local pics
+      // upload locals
       const uploads = await Promise.all(localPhotos.map(uploadPhoto));
       const photos = [...remote, ...uploads];
 
+      // write to Firestore
       await addDoc(collection(db, "artists"), {
         name,
         address,
-        rating: parseFloat(rating),
+        rating: parseFloat(rating) || 0,
         isOpenNow,
         category,
+        description,
+        email,
+        phone,
+        website,
+        priceRange,
         photos,
       });
+
       Alert.alert("Success", "Artist added!");
-      // reset
+      // reset form
       setName("");
       setAddress("");
       setRating("");
-      setPhotoUrl("");
-      setLocalPhotos([]);
       setIsOpenNow(false);
       setCategory("Painting");
+      setDescription("");
+      setEmail("");
+      setPhone("");
+      setWebsite("");
+      setPriceRange("");
+      setPhotoUrl("");
+      setLocalPhotos([]);
     } catch (e) {
       console.error(e);
-      Alert.alert("Upload Error", e.message);
+      Alert.alert("Error", e.message);
     }
     setLoading(false);
   };
@@ -143,6 +168,7 @@ export const AddArtistScreen = () => {
   return (
     <SafeArea>
       <ScrollView contentContainerStyle={{ padding: 16 }}>
+        {/* Name */}
         <Text variant="label">Name</Text>
         <Field
           placeholder="e.g. Jane Doe"
@@ -150,6 +176,7 @@ export const AddArtistScreen = () => {
           onChangeText={setName}
         />
 
+        {/* Address */}
         <Text variant="label">Address</Text>
         <Field
           placeholder="e.g. 123 Art St"
@@ -157,6 +184,7 @@ export const AddArtistScreen = () => {
           onChangeText={setAddress}
         />
 
+        {/* Rating (optional) */}
         <Text variant="label">Rating</Text>
         <Field
           placeholder="e.g. 4.5"
@@ -165,9 +193,7 @@ export const AddArtistScreen = () => {
           keyboardType="numeric"
         />
 
-        <Text variant="label">Open Now</Text>
-        <Switch value={isOpenNow} onValueChange={setIsOpenNow} />
-
+        {/* Category */}
         <Text variant="label">Category</Text>
         <View
           style={{
@@ -184,6 +210,51 @@ export const AddArtistScreen = () => {
           </Picker>
         </View>
 
+        {/* Description */}
+        <Text variant="label">Description</Text>
+        <Field
+          placeholder="Tell us about your work…"
+          value={description}
+          onChangeText={setDescription}
+          multiline
+          numberOfLines={4}
+          textAlignVertical="top"
+        />
+
+        {/* Contact */}
+        <Text variant="label">Email</Text>
+        <Field
+          placeholder="artist@example.com"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+        />
+
+        <Text variant="label">Phone</Text>
+        <Field
+          placeholder="+40 123 456 789"
+          value={phone}
+          onChangeText={setPhone}
+          keyboardType="phone-pad"
+        />
+
+        <Text variant="label">Website</Text>
+        <Field
+          placeholder="https://…"
+          value={website}
+          onChangeText={setWebsite}
+          keyboardType="url"
+        />
+
+        {/* Pricing */}
+        <Text variant="label">Price Range</Text>
+        <Field
+          placeholder="e.g. €100–€500"
+          value={priceRange}
+          onChangeText={setPriceRange}
+        />
+
+        {/* Photos */}
         <Text variant="label">Photos (comma-separated URLs)</Text>
         <Field
           placeholder="https://…jpg, https://…jpg"
