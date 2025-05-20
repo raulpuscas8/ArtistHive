@@ -1,6 +1,7 @@
+// src/features/map/screens/map.screen.js
+
 import React, { useContext, useState, useEffect } from "react";
 import MapView, { Marker, Callout } from "react-native-maps";
-
 import styled from "styled-components/native";
 
 import { Search } from "../components/search.component";
@@ -18,18 +19,37 @@ export const MapScreen = ({ navigation }) => {
   const { artists = [] } = useContext(ArtistsContext);
 
   const [latDelta, setLatDelta] = useState(0);
+  const [visibleArtists, setVisibleArtists] = useState([]);
 
-  const { lat, lng, viewport } = location;
-
+  // 1) Recompute zoom delta when location changes
   useEffect(() => {
-    const northeastLat = viewport.northeast.lat;
-    const southwestLat = viewport.southwest.lat;
+    if (location?.viewport) {
+      const ne = location.viewport.northeast.lat;
+      const sw = location.viewport.southwest.lat;
+      setLatDelta(ne - sw);
+    }
+  }, [location]);
 
-    setLatDelta(northeastLat - southwestLat);
-  }, [location, viewport]);
+  // 2) Filter artists into the current viewport bounds
+  useEffect(() => {
+    if (location?.viewport && artists.length) {
+      const { northeast, southwest } = location.viewport;
+      const inBounds = artists.filter((artist) => {
+        const aLat = artist.geometry.location.lat;
+        const aLng = artist.geometry.location.lng;
+        return (
+          aLat <= northeast.lat &&
+          aLat >= southwest.lat &&
+          aLng <= northeast.lng &&
+          aLng >= southwest.lng
+        );
+      });
+      setVisibleArtists(inBounds);
+    }
+  }, [artists, location]);
 
   if (!location) {
-    return null;
+    return null; // or a loader
   }
 
   return (
@@ -37,36 +57,33 @@ export const MapScreen = ({ navigation }) => {
       <Search />
       <Map
         region={{
-          latitude: lat,
-          longitude: lng,
+          latitude: location.lat,
+          longitude: location.lng,
           latitudeDelta: latDelta,
           longitudeDelta: 0.02,
         }}
       >
-        {artists.map((artist) => {
-          return (
-            <Marker
-              key={artist.name}
-              title={artist.name}
-              coordinate={{
-                latitude: artist.geometry.location.lat,
-                longitude: artist.geometry.location.lng,
-              }}
+        {visibleArtists.map((artist) => (
+          <Marker
+            key={artist.id}
+            title={artist.name}
+            coordinate={{
+              latitude: artist.geometry.location.lat,
+              longitude: artist.geometry.location.lng,
+            }}
+          >
+            <Callout
+              onPress={() =>
+                navigation.navigate("Artists", {
+                  screen: "ArtistDetail",
+                  params: { artist },
+                })
+              }
             >
-              <Callout
-                onPress={() => {
-                  console.log("Navigating to ArtistDetail with:", artist);
-                  navigation.navigate("Artists", {
-                    screen: "ArtistDetail",
-                    params: { artist },
-                  });
-                }}
-              >
-                <MapCallout artist={artist} />
-              </Callout>
-            </Marker>
-          );
-        })}
+              <MapCallout artist={artist} />
+            </Callout>
+          </Marker>
+        ))}
       </Map>
     </>
   );

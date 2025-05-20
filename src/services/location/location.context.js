@@ -1,45 +1,58 @@
-import React, { useState, useEffect } from "react";
+// src/services/location/location.context.js
 
-import { locationRequest, locationTransform } from "./location.service";
+import React, { createContext, useState, useEffect } from "react";
+import * as Location from "expo-location";
 
-export const LocationContext = React.createContext();
+export const LocationContext = createContext();
 
 export const LocationContextProvider = ({ children }) => {
-  const [keyword, setKeyword] = useState("San Francisco");
+  // the current text in the search bar
+  const [keyword, setKeyword] = useState("Search for a location");
+  // the geocoded result we share with consumers
   const [location, setLocation] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
 
-  const onSearch = (searchKeyword) => {
-    setIsLoading(true);
+  // <-- called by your Search component -->
+  const search = (searchKeyword) => {
     setKeyword(searchKeyword);
   };
 
+  // whenever `keyword` changes, forward‐geocode it:
   useEffect(() => {
-    if (!keyword.length) {
-      // don't do anything
-      return;
-    }
-    locationRequest(keyword.toLowerCase())
-      .then(locationTransform)
-      .then((result) => {
-        setIsLoading(false);
-        setLocation(result);
-        console.log(result);
-      })
-      .catch((err) => {
-        setIsLoading(false);
-        setError(err);
-      });
+    let isActive = true;
+    const forwardGeocode = async () => {
+      try {
+        // geocodeAsync works in Expo Go on iOS & Android
+        const results = await Location.geocodeAsync(keyword);
+        if (isActive && results.length > 0) {
+          const { latitude, longitude } = results[0];
+          // build a viewport so your map zooms reasonably
+          const delta = 0.01;
+          const viewport = {
+            northeast: { lat: latitude + delta, lng: longitude + delta },
+            southwest: { lat: latitude - delta, lng: longitude - delta },
+          };
+          setLocation({
+            lat: latitude,
+            lng: longitude,
+            viewport,
+          });
+        }
+      } catch (err) {
+        console.error("LocationContext geocode failed:", err);
+      }
+    };
+
+    forwardGeocode();
+    return () => {
+      isActive = false;
+    };
   }, [keyword]);
 
   return (
     <LocationContext.Provider
       value={{
-        isLoading,
-        error,
         location,
-        search: onSearch,
+        search,
         keyword,
       }}
     >

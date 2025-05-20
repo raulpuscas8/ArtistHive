@@ -1,12 +1,11 @@
 // src/features/hive/screens/add-artist.screen.js
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ScrollView,
   TextInput,
   Button,
   View,
-  Switch,
   Alert,
   Image,
   ActivityIndicator,
@@ -14,11 +13,12 @@ import {
 import styled from "styled-components/native";
 import { Picker } from "@react-native-picker/picker";
 import * as ImagePicker from "expo-image-picker";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { GeoPoint, collection, addDoc } from "firebase/firestore";
 
 import { SafeArea } from "../../../components/utility/safe-area.component";
 import { Text } from "../../../components/typography/text.component";
 import { db, storage } from "../../../utils/firebase.config";
-import { collection, addDoc } from "firebase/firestore";
 import {
   ref as storageRef,
   uploadBytesResumable,
@@ -33,6 +33,9 @@ const Field = styled(TextInput)`
 `;
 
 export const AddArtistScreen = () => {
+  const navigation = useNavigation();
+  const route = useRoute();
+
   // basic info
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
@@ -47,11 +50,22 @@ export const AddArtistScreen = () => {
   const [website, setWebsite] = useState("");
   const [priceRange, setPriceRange] = useState("");
 
+  // 📍 coords picked on the map
+  const [coords, setCoords] = useState(null);
+
   // photos
   const [photoUrl, setPhotoUrl] = useState("");
   const [localPhotos, setLocalPhotos] = useState([]);
 
   const [loading, setLoading] = useState(false);
+
+  // listen for the MapPicker callback
+  useEffect(() => {
+    if (route.params?.pickedLoc && route.params?.pickedAddress) {
+      setCoords(route.params.pickedLoc);
+      setAddress(route.params.pickedAddress);
+    }
+  }, [route.params]);
 
   const categories = [
     "Painting",
@@ -129,8 +143,8 @@ export const AddArtistScreen = () => {
       const uploads = await Promise.all(localPhotos.map(uploadPhoto));
       const photos = [...remote, ...uploads];
 
-      // write to Firestore
-      await addDoc(collection(db, "artists"), {
+      // build payload
+      const data = {
         name,
         address,
         rating: parseFloat(rating) || 0,
@@ -142,7 +156,13 @@ export const AddArtistScreen = () => {
         website,
         priceRange,
         photos,
-      });
+      };
+      if (coords) {
+        data.location = new GeoPoint(coords.lat, coords.lng);
+      }
+
+      // write to Firestore
+      await addDoc(collection(db, "artists"), data);
 
       Alert.alert("Success", "Artist added!");
       // reset form
@@ -158,6 +178,8 @@ export const AddArtistScreen = () => {
       setPriceRange("");
       setPhotoUrl("");
       setLocalPhotos([]);
+      setCoords(null);
+      navigation.goBack();
     } catch (e) {
       console.error(e);
       Alert.alert("Error", e.message);
@@ -176,15 +198,23 @@ export const AddArtistScreen = () => {
           onChangeText={setName}
         />
 
-        {/* Address */}
+        {/* Address & Map Picker */}
         <Text variant="label">Address</Text>
         <Field
           placeholder="e.g. 123 Art St"
           value={address}
           onChangeText={setAddress}
         />
+        <Button
+          title={coords ? "✔️ Location Set" : "Pick on Map"}
+          onPress={() =>
+            navigation.navigate("MapPicker", {
+              // no payload needed; we read back via route.params
+            })
+          }
+        />
 
-        {/* Rating (optional) */}
+        {/* Rating */}
         <Text variant="label">Rating</Text>
         <Field
           placeholder="e.g. 4.5"
