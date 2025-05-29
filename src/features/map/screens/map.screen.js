@@ -19,7 +19,7 @@ export const MapScreen = ({ navigation }) => {
   const { artists = [] } = useContext(ArtistsContext);
 
   const [latDelta, setLatDelta] = useState(0);
-  const [visibleArtists, setVisibleArtists] = useState([]);
+  const [pins, setPins] = useState([]);
 
   // 1) Recompute zoom delta when location changes
   useEffect(() => {
@@ -30,23 +30,21 @@ export const MapScreen = ({ navigation }) => {
     }
   }, [location]);
 
-  // 2) Filter artists into the current viewport bounds
+  // 2) Turn your Firestore GeoPoints into markers
   useEffect(() => {
-    if (location?.viewport && artists.length) {
-      const { northeast, southwest } = location.viewport;
-      const inBounds = artists.filter((artist) => {
-        const aLat = artist.geometry.location.lat;
-        const aLng = artist.geometry.location.lng;
-        return (
-          aLat <= northeast.lat &&
-          aLat >= southwest.lat &&
-          aLng <= northeast.lng &&
-          aLng >= southwest.lng
-        );
-      });
-      setVisibleArtists(inBounds);
-    }
-  }, [artists, location]);
+    const withLocation = artists.filter((a) => a.location);
+    const mapped = withLocation.map((a) => ({
+      id: a.id,
+      title: a.name,
+      coordinate: {
+        latitude: a.location.latitude,
+        longitude: a.location.longitude,
+      },
+      // pass the full artist object down to the Callout
+      artist: a,
+    }));
+    setPins(mapped);
+  }, [artists]);
 
   if (!location) {
     return null; // or a loader
@@ -63,24 +61,17 @@ export const MapScreen = ({ navigation }) => {
           longitudeDelta: 0.02,
         }}
       >
-        {visibleArtists.map((artist) => (
-          <Marker
-            key={artist.id}
-            title={artist.name}
-            coordinate={{
-              latitude: artist.geometry.location.lat,
-              longitude: artist.geometry.location.lng,
-            }}
-          >
+        {pins.map((pin) => (
+          <Marker key={pin.id} title={pin.title} coordinate={pin.coordinate}>
             <Callout
               onPress={() =>
                 navigation.navigate("Artists", {
                   screen: "ArtistDetail",
-                  params: { artist },
+                  params: { artist: pin.artist },
                 })
               }
             >
-              <MapCallout artist={artist} />
+              <MapCallout artist={pin.artist} />
             </Callout>
           </Marker>
         ))}

@@ -16,6 +16,7 @@ import { AppNavigator } from "./app.navigator";
 import { AddArtistScreen } from "../../features/hive/screens/add-artist.screen";
 import { MapPickerScreen } from "../../features/hive/screens/map-picker.screen";
 import { Text } from "../../components/typography/text.component";
+import { PaymentWebViewScreen } from "../../features/payment/screens/payment-webview.screen";
 
 const Drawer = createDrawerNavigator();
 const AddArtistStack = createStackNavigator();
@@ -67,5 +68,6 @@ export const DrawerNavigator = () => (
   >
     <Drawer.Screen name="Home" component={AppNavigator} />
     <Drawer.Screen name="Add Artist" component={AddArtistStackNavigator} />
+    <Drawer.Screen name="Stripe Web Payment" component={PaymentWebViewScreen} />
   </Drawer.Navigator>
 );
