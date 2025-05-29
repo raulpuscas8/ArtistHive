@@ -1,7 +1,9 @@
+require("dotenv").config(); // Load variables from .env at the very top
+
 const express = require("express");
 const app = express();
 const cors = require("cors");
-const stripe = require("stripe")("");
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 app.use(cors());
 app.use(express.json());
