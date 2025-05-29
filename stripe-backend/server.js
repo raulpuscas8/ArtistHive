@@ -1,9 +1,7 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
-const stripe = require("stripe")(
-  "sk_test_51N1w2fEN9Rbh6iDjnGfAPBVGtBTr2iHG7u4ZYhE6N1ZAn6PbFrbK2LB8RKMRWI9ALBMYm7qxxkGu1wDZb6mjYYf800MkrTmVd3"
-);
+const stripe = require("stripe")("");
 
 app.use(cors());
 app.use(express.json());
