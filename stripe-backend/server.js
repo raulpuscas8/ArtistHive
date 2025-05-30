@@ -1,4 +1,4 @@
-require("dotenv").config(); // Load variables from .env at the very top
+require("dotenv").config(); // Load .env
 
 const express = require("express");
 const app = express();
@@ -8,7 +8,7 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 app.use(cors());
 app.use(express.json());
 
-// Create PaymentIntent (for CardField, not used here, but keep if needed)
+// PaymentIntent (keep as before, optional)
 app.post("/create-payment-intent", async (req, res) => {
   try {
     const paymentIntent = await stripe.paymentIntents.create({
@@ -22,27 +22,45 @@ app.post("/create-payment-intent", async (req, res) => {
   }
 });
 
-// Create Stripe Checkout Session
+// Checkout Session (put your new code here!)
 app.post("/create-checkout-session", async (req, res) => {
   try {
+    let { amount, currency, name } = req.body;
+
+    if (!amount || !currency) {
+      return res.status(400).json({ error: "Missing amount or currency" });
+    }
+
+    const allowedCurrencies = ["ron", "eur", "usd"];
+    if (!allowedCurrencies.includes(currency.toLowerCase())) {
+      return res.status(400).json({ error: "Unsupported currency" });
+    }
+
+    const unitAmount = Math.round(Number(amount) * 100);
+
+    if (!unitAmount || unitAmount < 100) {
+      return res.status(400).json({ error: "Invalid amount" });
+    }
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "payment",
       line_items: [
         {
           price_data: {
-            currency: "ron",
+            currency: currency.toLowerCase(),
             product_data: {
-              name: "ArtistHive Demo Payment",
+              name: name || "ArtistHive Demo Payment",
             },
-            unit_amount: 500, // amount in bani/cents (5 RON)
+            unit_amount: unitAmount,
           },
           quantity: 1,
         },
       ],
-      success_url: "https://www.google.com/?success=true", // <--- after payment
-      cancel_url: "https://www.google.com/?canceled=true", // <--- if canceled
+      success_url: "https://artist-hive-success",
+      cancel_url: "https://artist-hive-cancel",
     });
+
     res.send({ url: session.url });
   } catch (error) {
     res.status(500).json({ error: error.message });

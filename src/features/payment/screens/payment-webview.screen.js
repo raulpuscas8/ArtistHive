@@ -1,14 +1,22 @@
-import React, { useEffect, useState } from "react";
-import { ActivityIndicator, View, Alert } from "react-native";
+import React, { useEffect, useState, useRef } from "react";
+import { ActivityIndicator, View, Alert, Button } from "react-native";
 import { WebView } from "react-native-webview";
 import { Text } from "../../../components/typography/text.component";
-import { Button } from "react-native";
+import { StyleSheet } from "react-native";
 
-export const PaymentWebViewScreen = ({ navigation }) => {
+export const PaymentWebViewScreen = ({ navigation, route }) => {
+  const { amount, currency, name } = route.params || {};
+
   const [checkoutUrl, setCheckoutUrl] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [visible, setVisible] = useState(true); // <-- NEW!
+  const handledPayment = useRef(false);
 
   const createCheckoutSession = async () => {
+    if (!amount || !currency) {
+      Alert.alert("Lipsesc informații despre plată.");
+      return;
+    }
     setLoading(true);
     try {
       const response = await fetch(
@@ -16,7 +24,11 @@ export const PaymentWebViewScreen = ({ navigation }) => {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({}),
+          body: JSON.stringify({
+            amount,
+            currency,
+            name: name || "Plată ArtistHive",
+          }),
         }
       );
       const data = await response.json();
@@ -31,11 +43,45 @@ export const PaymentWebViewScreen = ({ navigation }) => {
     createCheckoutSession();
   }, []);
 
+  // This handler only runs once for success/cancel
+  const handleWebViewNav = (event) => {
+    if (handledPayment.current) return;
+
+    if (event.url.startsWith("https://artist-hive-success")) {
+      handledPayment.current = true;
+      setVisible(false); // HIDE WEBVIEW!
+      Alert.alert("Plată efectuată cu succes!", "", [
+        {
+          text: "OK",
+          onPress: () => navigation.goBack(),
+        },
+      ]);
+    }
+    if (event.url.startsWith("https://artist-hive-cancel")) {
+      handledPayment.current = true;
+      setVisible(false);
+      Alert.alert("Plata a fost anulată.", "", [
+        {
+          text: "OK",
+          onPress: () => navigation.goBack(),
+        },
+      ]);
+    }
+  };
+
+  if (!amount || !currency) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text variant="body">Nu au fost trimise datele pentru plată.</Text>
+      </View>
+    );
+  }
+
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" />
-        <Text variant="label">Se încarcă sesiunea de plată...</Text>
+        <Text variant="body">Se încarcă sesiunea de plată...</Text>
       </View>
     );
   }
@@ -43,27 +89,31 @@ export const PaymentWebViewScreen = ({ navigation }) => {
   if (!checkoutUrl) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text variant="label">Nu s-a putut genera sesiunea de plată.</Text>
+        <Text variant="body">Nu s-a putut genera sesiunea de plată.</Text>
         <Button title="Încearcă din nou" onPress={createCheckoutSession} />
       </View>
     );
   }
 
   return (
-    <WebView
-      source={{ uri: checkoutUrl }}
-      style={{ flex: 1 }}
-      onNavigationStateChange={(event) => {
-        // If you want, handle success/cancel here
-        if (event.url.includes("success=true")) {
-          Alert.alert("Plată efectuată cu succes!");
-          navigation.goBack();
-        }
-        if (event.url.includes("canceled=true")) {
-          Alert.alert("Plata a fost anulată.");
-          navigation.goBack();
-        }
-      }}
-    />
+    <View style={{ flex: 1 }}>
+      {visible && (
+        <WebView
+          source={{ uri: checkoutUrl }}
+          style={{ flex: 1 }}
+          onNavigationStateChange={handleWebViewNav}
+        />
+      )}
+      {!visible && (
+        <View
+          style={{
+            ...StyleSheet.absoluteFillObject,
+            backgroundColor: "#fff",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        />
+      )}
+    </View>
   );
 };

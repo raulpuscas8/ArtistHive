@@ -19,10 +19,10 @@
     "@react-navigation/drawer": "^7.3.12",
     "@react-navigation/native": "^7.0.15",
     "@react-navigation/stack": "^7.1.2",
-    "@stripe/stripe-react-native": "0.45.0",
     "babel-preset-expo": "~13.0.0",
     "camelize": "^1.0.1",
     "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
     "expo": "^53.0.0",
     "expo-app-loading": "^1.1.2",
     "expo-camera": "~16.1.6",
@@ -60,9 +60,5 @@
     "expo-doctor": "^1.13.3",
     "react-native-dotenv": "^3.4.11",
     "react-native-svg-transformer": "^1.5.0"
-  },
-  "description": "",
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+  }
 }

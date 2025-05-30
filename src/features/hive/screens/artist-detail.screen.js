@@ -6,8 +6,9 @@ import { List, Divider } from "react-native-paper";
 
 import { ArtistInfoCard } from "../components/artist-info-card.component";
 import { SafeArea } from "../../../components/utility/safe-area.component";
+import { Button } from "react-native";
 
-export const ArtistDetailScreen = ({ route }) => {
+export const ArtistDetailScreen = ({ route, navigation }) => {
   const { artist } = route.params;
   const [descExpanded, setDescExpanded] = useState(true);
   const [contactExpanded, setContactExpanded] = useState(false);
@@ -34,6 +35,22 @@ export const ArtistDetailScreen = ({ route }) => {
     } catch (err) {
       Alert.alert("An error occurred:", err.message);
     }
+  };
+  const getPriceLabel = () => {
+    if (!artist.price || !artist.currency) return "Not specified.";
+    let label = "";
+    if (artist.currency === "RON") label = "lei";
+    if (artist.currency === "EUR") label = "euro";
+    if (artist.currency === "USD") label = "USD";
+    return `${artist.price} ${label}`;
+  };
+  const handleBuy = () => {
+    // Navigate to the payment webview screen with amount/currency
+    navigation.navigate("Stripe Web Payment", {
+      amount: artist.price,
+      currency: artist.currency,
+      name: artist.name,
+    });
   };
 
   return (
@@ -104,7 +121,14 @@ export const ArtistDetailScreen = ({ route }) => {
             expanded={pricingExpanded}
             onPress={() => setPricingExpanded(!pricingExpanded)}
           >
-            <List.Item title={artist.priceRange || "Not specified."} />
+            <List.Item title={getPriceLabel()} />
+            {artist.price && artist.currency && (
+              <Button
+                title="Cumpără"
+                onPress={handleBuy}
+                color="#8BC34A" // a nice green for buy
+              />
+            )}
           </List.Accordion>
         </List.Section>
       </ScrollView>

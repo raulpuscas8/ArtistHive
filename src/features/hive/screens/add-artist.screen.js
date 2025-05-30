@@ -48,7 +48,10 @@ export const AddArtistScreen = () => {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [website, setWebsite] = useState("");
-  const [priceRange, setPriceRange] = useState("");
+
+  // price & currency
+  const [price, setPrice] = useState("");
+  const [currency, setCurrency] = useState("RON");
 
   // 📍 coords picked on the map
   const [coords, setCoords] = useState(null);
@@ -127,10 +130,14 @@ export const AddArtistScreen = () => {
       !address ||
       !description ||
       !email ||
-      !priceRange ||
+      !price ||
+      !currency ||
       (!photoUrl.trim() && localPhotos.length === 0)
     ) {
       return Alert.alert("All required fields must be filled");
+    }
+    if (isNaN(price) || Number(price) <= 0) {
+      return Alert.alert("Price must be a positive number");
     }
     setLoading(true);
     try {
@@ -154,7 +161,8 @@ export const AddArtistScreen = () => {
         email,
         phone,
         website,
-        priceRange,
+        price: parseFloat(price),
+        currency,
         photos,
       };
       if (coords) {
@@ -175,7 +183,8 @@ export const AddArtistScreen = () => {
       setEmail("");
       setPhone("");
       setWebsite("");
-      setPriceRange("");
+      setPrice("");
+      setCurrency("RON");
       setPhotoUrl("");
       setLocalPhotos([]);
       setCoords(null);
@@ -277,12 +286,42 @@ export const AddArtistScreen = () => {
         />
 
         {/* Pricing */}
-        <Text variant="label">Price Range</Text>
+        <Text variant="label">Pricing</Text>
         <Field
-          placeholder="e.g. €100–€500"
-          value={priceRange}
-          onChangeText={setPriceRange}
+          placeholder="e.g. 100"
+          value={price}
+          onChangeText={setPrice}
+          keyboardType="numeric"
         />
+        <Text variant="label" style={{ marginTop: 0 }}>
+          Currency
+        </Text>
+        <View
+          style={{
+            borderWidth: 1,
+            borderColor: "#ccc",
+            borderRadius: 4,
+            marginBottom: 16,
+            marginTop: 0,
+            overflow: "hidden",
+            height: 120, // Make picker tall, just like category
+            justifyContent: "center",
+          }}
+        >
+          <Picker
+            selectedValue={currency}
+            onValueChange={setCurrency}
+            style={{
+              height: 120, // Make picker tall for iOS spinner style
+              width: "100%",
+            }}
+            itemStyle={{ fontSize: 24, height: 120, textAlign: "center" }} // makes the items more visible/centered
+          >
+            <Picker.Item label="Lei (RON)" value="RON" />
+            <Picker.Item label="Euro (EUR)" value="EUR" />
+            <Picker.Item label="USD" value="USD" />
+          </Picker>
+        </View>
 
         {/* Photos */}
         <Text variant="label">Photos (comma-separated URLs)</Text>
