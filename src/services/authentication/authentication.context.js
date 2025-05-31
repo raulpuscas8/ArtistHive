@@ -6,22 +6,46 @@ import {
   getAuth,
   signInWithEmailAndPassword,
 } from "firebase/auth";
+import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
 
 export const AuthenticationContext = createContext();
 
 export const AuthenticationContextProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState(null);
+  const [userRole, setUserRole] = useState(null); // Add this line
   const [error, setError] = useState(null);
+
   const auth = getAuth();
+  const db = getFirestore();
+
+  // Helper function to fetch user role from Firestore
+  const fetchUserRole = async (uid) => {
+    try {
+      const userDoc = await getDoc(doc(db, "users", uid));
+      if (userDoc.exists()) {
+        setUserRole(userDoc.data().role);
+      } else {
+        setUserRole(null);
+      }
+    } catch (err) {
+      setUserRole(null);
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (usr) => {
       setUser(usr);
+      if (usr) {
+        fetchUserRole(usr.uid);
+      } else {
+        setUserRole(null);
+      }
       setIsLoading(false);
     });
 
     return () => unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onLogin = (email, password) => {
@@ -29,8 +53,9 @@ export const AuthenticationContextProvider = ({ children }) => {
     setError(null);
 
     signInWithEmailAndPassword(auth, email, password)
-      .then((u) => {
+      .then(async (u) => {
         setUser(u.user);
+        await fetchUserRole(u.user.uid);
         setIsLoading(false);
       })
       .catch((e) => {
@@ -50,8 +75,14 @@ export const AuthenticationContextProvider = ({ children }) => {
     }
 
     createUserWithEmailAndPassword(auth, email, password)
-      .then((u) => {
+      .then(async (u) => {
+        // Create user profile in Firestore with default role "user"
+        await setDoc(doc(db, "users", u.user.uid), {
+          email: email,
+          role: "user",
+        });
         setUser(u.user);
+        await fetchUserRole(u.user.uid);
         setIsLoading(false);
       })
       .catch((e) => {
@@ -64,6 +95,7 @@ export const AuthenticationContextProvider = ({ children }) => {
     signOut(auth)
       .then(() => {
         setUser(null);
+        setUserRole(null);
         setError(null);
       })
       .catch((e) => console.log("Logout error", e));
@@ -74,6 +106,7 @@ export const AuthenticationContextProvider = ({ children }) => {
       value={{
         isAuthenticated: !!user,
         user,
+        userRole, // Add this
         isLoading,
         error,
         onLogin,
