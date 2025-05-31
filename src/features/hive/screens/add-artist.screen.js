@@ -39,7 +39,6 @@ export const AddArtistScreen = () => {
   // basic info
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
-  const [rating, setRating] = useState("");
   const [isOpenNow, setIsOpenNow] = useState(false);
   const [category, setCategory] = useState("Painting");
 
@@ -154,7 +153,6 @@ export const AddArtistScreen = () => {
       const data = {
         name,
         address,
-        rating: parseFloat(rating) || 0,
         isOpenNow,
         category,
         description,
@@ -164,6 +162,8 @@ export const AddArtistScreen = () => {
         price: parseFloat(price),
         currency,
         photos,
+        avgRating: 0,
+        ratingsCount: 0,
       };
       if (coords) {
         data.location = new GeoPoint(coords.lat, coords.lng);
@@ -176,7 +176,6 @@ export const AddArtistScreen = () => {
       // reset form
       setName("");
       setAddress("");
-      setRating("");
       setIsOpenNow(false);
       setCategory("Painting");
       setDescription("");
@@ -221,15 +220,6 @@ export const AddArtistScreen = () => {
               // no payload needed; we read back via route.params
             })
           }
-        />
-
-        {/* Rating */}
-        <Text variant="label">Rating</Text>
-        <Field
-          placeholder="e.g. 4.5"
-          value={rating}
-          onChangeText={setRating}
-          keyboardType="numeric"
         />
 
         {/* Category */}

@@ -1,16 +1,35 @@
 // src/features/hive/screens/artist-detail.screen.js
 
-import React, { useState, useContext } from "react";
-import { ScrollView, Linking, Alert } from "react-native";
+import React, { useState, useContext, useEffect } from "react";
+import {
+  ScrollView,
+  Linking,
+  Alert,
+  View,
+  ActivityIndicator,
+  StyleSheet,
+} from "react-native";
 import { List, Divider } from "react-native-paper";
 
 import { ArtistInfoCard } from "../components/artist-info-card.component";
 import { SafeArea } from "../../../components/utility/safe-area.component";
 import { Button } from "react-native";
+import { Text } from "../../../components/typography/text.component";
 
 import { AuthenticationContext } from "../../../services/authentication/authentication.context";
-import { getFirestore, doc, deleteDoc } from "firebase/firestore";
+import {
+  getFirestore,
+  doc,
+  deleteDoc,
+  collection,
+  setDoc,
+  getDoc,
+  onSnapshot,
+  updateDoc,
+  getDocs,
+} from "firebase/firestore";
 import { getStorage, ref as storageRef, deleteObject } from "firebase/storage";
+import { Ionicons } from "@expo/vector-icons";
 
 export const ArtistDetailScreen = ({ route, navigation }) => {
   const { artist } = route.params;
@@ -18,31 +37,13 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
   const [contactExpanded, setContactExpanded] = useState(false);
   const [pricingExpanded, setPricingExpanded] = useState(false);
 
-  // NEW: Get userRole from context
-  const { userRole } = useContext(AuthenticationContext);
+  const [avgRating, setAvgRating] = useState(null);
+  const [ratingsCount, setRatingsCount] = useState(null);
+  const [myRating, setMyRating] = useState(null);
+  const [isLoadingRating, setIsLoadingRating] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handlePress = async (type, value) => {
-    let url = value;
-    if (type === "email") {
-      url = `mailto:${value}`;
-    } else if (type === "phone") {
-      url = `tel:${value}`;
-    } else {
-      url = value.startsWith("http") ? value : `https://${value}`;
-    }
-
-    try {
-      const supported = await Linking.canOpenURL(url);
-      if (!supported) {
-        Alert.alert("Can't handle this URL:", url);
-        return;
-      }
-      await Linking.openURL(url);
-    } catch (err) {
-      Alert.alert("An error occurred:", err.message);
-    }
-  };
-
+  const { user, userRole } = useContext(AuthenticationContext);
   const getPriceLabel = () => {
     if (!artist.price || !artist.currency) return "Not specified.";
     let label = "";
@@ -51,7 +52,6 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
     if (artist.currency === "USD") label = "USD";
     return `${artist.price} ${label}`;
   };
-
   const handleBuy = () => {
     navigation.navigate("Stripe Web Payment", {
       amount: artist.price,
@@ -60,7 +60,84 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
     });
   };
 
-  // NEW: Delete logic (admin only)
+  // --- Load rating info (live) ---
+  useEffect(() => {
+    if (!artist?.id) return;
+
+    const db = getFirestore();
+    const artistRef = doc(db, "artists", artist.id);
+
+    const unsub = onSnapshot(artistRef, (snap) => {
+      const d = snap.data();
+      setAvgRating(d?.avgRating ?? 0);
+      setRatingsCount(d?.ratingsCount ?? 0);
+    });
+
+    // Also check if user already voted
+    let unsubMy = null;
+    if (user?.uid) {
+      const myVoteRef = doc(db, "artists", artist.id, "ratings", user.uid);
+      unsubMy = onSnapshot(myVoteRef, (snap) => {
+        if (snap.exists()) {
+          setMyRating(snap.data().rating);
+        } else {
+          setMyRating(null);
+        }
+        setIsLoadingRating(false);
+      });
+    } else {
+      setIsLoadingRating(false);
+    }
+
+    return () => {
+      unsub();
+      if (unsubMy) unsubMy();
+    };
+  }, [artist.id, user?.uid]);
+
+  // --- Handle voting ---
+  const handleVote = async (value) => {
+    if (!user?.uid) {
+      Alert.alert("You must be logged in to rate.");
+      return;
+    }
+    setIsSubmitting(true);
+
+    try {
+      const db = getFirestore();
+      const voteRef = doc(db, "artists", artist.id, "ratings", user.uid);
+      const artistRef = doc(db, "artists", artist.id);
+
+      // Set/update user vote
+      await setDoc(voteRef, { rating: value }, { merge: true });
+
+      // Get all ratings for this artist
+      const ratingsSnap = await getDocs(
+        collection(db, "artists", artist.id, "ratings")
+      );
+      let sum = 0;
+      let count = 0;
+      ratingsSnap.forEach((doc) => {
+        sum += doc.data().rating;
+        count++;
+      });
+      const avg = count ? sum / count : 0;
+
+      // Save average & count to artist doc
+      await updateDoc(artistRef, {
+        avgRating: avg,
+        ratingsCount: count,
+      });
+
+      setIsSubmitting(false);
+      Alert.alert("Thank you for voting!");
+    } catch (err) {
+      setIsSubmitting(false);
+      Alert.alert("Error submitting vote", err.message);
+    }
+  };
+
+  // ---- Delete logic (admin only) ----
   const handleDelete = async () => {
     Alert.alert(
       "Confirm Deletion",
@@ -80,11 +157,9 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
                 await Promise.all(
                   artist.photos.map(async (url) => {
                     try {
-                      // Get path from full URL (works for default Firebase Storage URLs)
                       const base =
                         "https://firebasestorage.googleapis.com/v0/b/";
                       if (url.startsWith(base)) {
-                        // Parse the path after `/o/` and before `?alt=`
                         const pathMatch =
                           decodeURIComponent(url).match(/\/o\/(.+)\?alt/);
                         if (pathMatch && pathMatch[1]) {
@@ -94,14 +169,11 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
                         }
                       }
                     } catch (imgErr) {
-                      // Log and continue; you might want to handle or notify for failed deletes
                       console.log("Failed to delete image:", imgErr);
                     }
                   })
                 );
               }
-
-              // Now delete the Firestore doc
               await deleteDoc(doc(db, "artists", artist.id));
               Alert.alert("Announcement and images deleted.");
               navigation.goBack();
@@ -114,10 +186,71 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
     );
   };
 
+  // --- UI for star voting ---
+  const renderStars = () => {
+    // show user selection or current avg
+    const displayRating = myRating ?? avgRating ?? 0;
+    return (
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          marginTop: 12,
+          marginBottom: 8,
+        }}
+      >
+        {[1, 2, 3, 4, 5].map((i) => (
+          <Ionicons
+            key={i}
+            name={displayRating >= i ? "star" : "star-outline"}
+            size={32}
+            color="#FFD700"
+            style={{ marginHorizontal: 3 }}
+            onPress={() => !isSubmitting && handleVote(i)}
+            // Only allow voting if not loading or submitting
+            disabled={isSubmitting}
+          />
+        ))}
+        <Text variant="body" style={{ marginLeft: 10, fontWeight: "bold" }}>
+          {isLoadingRating ? "..." : avgRating ? avgRating.toFixed(2) : "0.00"}
+          <Text variant="caption" style={{ fontWeight: "normal" }}>
+            {" "}
+            ({ratingsCount || 0} votes)
+          </Text>
+        </Text>
+
+        {myRating ? (
+          <Text variant="caption" style={{ marginLeft: 8, color: "green" }}>
+            You voted {myRating}★
+          </Text>
+        ) : null}
+      </View>
+    );
+  };
+
   return (
     <SafeArea>
       <ScrollView>
         <ArtistInfoCard artist={artist} />
+
+        {/* ---- STAR VOTING UI HERE ---- */}
+        <View
+          style={{
+            paddingHorizontal: 20,
+            paddingTop: 10,
+            alignItems: "flex-start",
+          }}
+        >
+          <Text
+            variant="label"
+            style={{ fontWeight: "bold", fontSize: 16, marginBottom: 4 }}
+          >
+            Rate this artist:
+          </Text>
+
+          {renderStars()}
+          {isSubmitting && <ActivityIndicator size="small" color="#FFD700" />}
+        </View>
 
         <List.Section>
           {/* Description */}
@@ -189,7 +322,7 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
           </List.Accordion>
         </List.Section>
 
-        {/* NEW: Delete button for admin */}
+        {/* Delete button for admin */}
         {userRole === "admin" && (
           <Button
             title="Delete Announcement"
