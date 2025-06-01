@@ -21,6 +21,16 @@ import { FavouritesContext } from "../../../services/favourites/favourites.conte
 import { ArtistList } from "../components/artist-list.styles";
 import { FadeInView } from "../../../components/animations/fade.animation";
 
+// FIREBASE imports for deletion
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  deleteDoc,
+} from "firebase/firestore";
+
+import { getStorage, ref as storageRef, deleteObject } from "firebase/storage";
+
 const Loading = styled(ActivityIndicator)`
   margin-left: -25px;
 `;
@@ -51,6 +61,64 @@ export const ArtistScreen = ({ navigation }) => {
 
   const [isFavouritesToggled, setIsFavouritesToggled] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
+
+  // ----------- AUTO DELETE EXPIRED ANNOUNCEMENTS -----------
+  useEffect(() => {
+    const deleteExpiredAnnouncements = async () => {
+      try {
+        const db = getFirestore();
+        const storage = getStorage();
+        const now = new Date();
+        const artistsCol = collection(db, "artists");
+        const snapshot = await getDocs(artistsCol);
+
+        const toDelete = [];
+        for (const docSnap of snapshot.docs) {
+          const data = docSnap.data();
+          const expiresAt = data.expiresAt?.toDate?.();
+          if (expiresAt && expiresAt < now) {
+            // Delete all images in Storage (if any)
+            if (data.photos && Array.isArray(data.photos)) {
+              for (const url of data.photos) {
+                // Parse the storage path from the URL
+                const base = "https://firebasestorage.googleapis.com/v0/b/";
+                if (url.startsWith(base)) {
+                  const pathMatch =
+                    decodeURIComponent(url).match(/\/o\/(.+)\?alt/);
+                  if (pathMatch && pathMatch[1]) {
+                    const filePath = pathMatch[1];
+                    const imgRef = storageRef(storage, filePath);
+                    try {
+                      await deleteObject(imgRef);
+                    } catch (err) {
+                      console.log(
+                        "Could not delete image:",
+                        filePath,
+                        err.message
+                      );
+                    }
+                  }
+                }
+              }
+            }
+            toDelete.push(docSnap.ref);
+          }
+        }
+
+        await Promise.all(toDelete.map((ref) => deleteDoc(ref)));
+        if (toDelete.length > 0) {
+          console.log(
+            `🔥 Deleted ${toDelete.length} expired announcements and images.`
+          );
+        }
+      } catch (err) {
+        console.error("Error deleting expired announcements:", err);
+      }
+    };
+
+    deleteExpiredAnnouncements();
+  }, []);
+  // ---------------------------------------------------------
 
   // DEBUG: inspect the artists payload
   useEffect(() => {
