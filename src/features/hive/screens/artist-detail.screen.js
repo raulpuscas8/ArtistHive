@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Image,
   Alert,
+  Linking,
 } from "react-native";
 import { List, Divider } from "react-native-paper";
 import { ArtistInfoCard } from "../components/artist-info-card.component";
@@ -34,25 +35,58 @@ import {
 import { getStorage, ref as storageRef, deleteObject } from "firebase/storage";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 
+// Helper: returns how many days left until expiresAt, or 0 if expired
+const getDaysLeft = (expiresAt) => {
+  if (!expiresAt?.toDate) return null;
+  const now = new Date();
+  const exp = expiresAt.toDate();
+  const diff = Math.ceil((exp - now) / (1000 * 60 * 60 * 24));
+  if (diff < 0) return 0;
+  return diff;
+};
+
+// Helper: add N days to a JS Date object
+function addDays(date, days) {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+}
+
 export const ArtistDetailScreen = ({ route, navigation }) => {
-  const { artist } = route.params;
+  const { artist } = route.params || {};
+
+  // Optional: fallback for missing artist
+  if (!artist) {
+    return (
+      <SafeArea>
+        <View
+          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+        >
+          <Text variant="error">Artist details not available.</Text>
+          <Button title="Go Back" onPress={() => navigation.goBack()} />
+        </View>
+      </SafeArea>
+    );
+  }
+
+  const daysLeft = getDaysLeft(artist.expiresAt);
   const [descExpanded, setDescExpanded] = useState(true);
   const [contactExpanded, setContactExpanded] = useState(false);
   const [pricingExpanded, setPricingExpanded] = useState(false);
 
-  // RATING
+  // Rating
   const [avgRating, setAvgRating] = useState(null);
   const [ratingsCount, setRatingsCount] = useState(null);
   const [myRating, setMyRating] = useState(null);
   const [isLoadingRating, setIsLoadingRating] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // COMMENTS
+  // Comments
   const [comments, setComments] = useState([]);
   const [commentInput, setCommentInput] = useState("");
   const [isPostingComment, setIsPostingComment] = useState(false);
 
-  // For editing comments
+  // Edit comments
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editingCommentText, setEditingCommentText] = useState("");
   const [isEditingComment, setIsEditingComment] = useState(false);
@@ -60,6 +94,10 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
   const { user, userRole } = useContext(AuthenticationContext);
   const commentInputRef = useRef(null);
 
+  // Banner for expiry extension
+  const [showExtendBanner, setShowExtendBanner] = useState(false);
+
+  // Handle price label
   const getPriceLabel = () => {
     if (!artist.price || !artist.currency) return "Not specified.";
     let label = "";
@@ -237,6 +275,48 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
     );
   };
 
+  // --- Show banner to extend expiry if owner and near expiry ---
+  useEffect(() => {
+    // Only show if user is owner, daysLeft <= 1, and not already expired
+    if (
+      user?.uid &&
+      artist.userId === user.uid &&
+      daysLeft !== null &&
+      daysLeft <= 1 &&
+      daysLeft > 0
+    ) {
+      setShowExtendBanner(true);
+    } else {
+      setShowExtendBanner(false);
+    }
+  }, [user?.uid, artist.userId, daysLeft]);
+
+  // --- Handler for extending expiry ---
+  const handleExtendExpiry = async () => {
+    try {
+      const db = getFirestore();
+      const artistRef = doc(db, "artists", artist.id);
+
+      // Get the latest expiresAt (refresh)
+      const artistSnap = await getDoc(artistRef);
+      const currentExpiresAt =
+        artistSnap.data()?.expiresAt?.toDate?.() || new Date();
+
+      const newExpiry = addDays(currentExpiresAt, 29);
+
+      await updateDoc(artistRef, {
+        expiresAt: newExpiry,
+      });
+      Alert.alert(
+        "Extended!",
+        "The announcement expiry date was extended by 30 days."
+      );
+      setShowExtendBanner(false);
+    } catch (err) {
+      Alert.alert("Could not extend expiry", err.message);
+    }
+  };
+
   // ----- COMMENTS: Read -----
   useEffect(() => {
     if (!artist?.id) return;
@@ -383,8 +463,8 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
         }}
       >
         <Text
-          style={{ color: "#fff", fontWeight: "bold", fontSize: 18 }}
           variant="label"
+          style={{ color: "#fff", fontWeight: "bold", fontSize: 18 }}
         >
           {initial}
         </Text>
@@ -464,10 +544,83 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
     );
   };
 
+  // --- In-app banner for extending expiry (if owner, about to expire) ---
+  const ExtendBanner = () =>
+    showExtendBanner ? (
+      <View
+        style={{
+          backgroundColor: "#FFF8E1",
+          borderColor: "#FFD54F",
+          borderWidth: 1,
+          borderRadius: 10,
+          marginHorizontal: 20,
+          marginVertical: 6,
+          padding: 16,
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "row",
+          gap: 8,
+        }}
+      >
+        <Ionicons name="alert-circle" size={28} color="#FFA000" />
+        <View style={{ flex: 1 }}>
+          <Text
+            style={{
+              color: "#FFA000",
+              fontWeight: "bold",
+              fontSize: 15,
+              marginBottom: 4,
+            }}
+          >
+            Announcement about to expire!
+          </Text>
+          <Text style={{ color: "#B97309" }}>
+            Do you want to extend by 30 days?
+          </Text>
+        </View>
+        <Button title="Extend" color="#FFA000" onPress={handleExtendExpiry} />
+      </View>
+    ) : null;
+
   // --- All header content (everything above comments) ---
   const ListHeaderComponent = (
     <>
       <ArtistInfoCard artist={artist} />
+      <ExtendBanner />
+      {/* Expiry status */}
+      <View style={{ paddingHorizontal: 20, marginTop: 10, marginBottom: 2 }}>
+        {daysLeft === 0 ? (
+          <Text
+            variant="label"
+            style={{
+              color: "red",
+              fontWeight: "bold",
+              backgroundColor: "#ffd6d6",
+              borderRadius: 8,
+              paddingHorizontal: 10,
+              paddingVertical: 2,
+              alignSelf: "flex-start",
+            }}
+          >
+            Expirat
+          </Text>
+        ) : daysLeft ? (
+          <Text
+            variant="label"
+            style={{
+              color: "#B97309",
+              backgroundColor: "#fff3cd",
+              borderRadius: 8,
+              paddingHorizontal: 10,
+              paddingVertical: 2,
+              alignSelf: "flex-start",
+              fontWeight: "bold",
+            }}
+          >
+            Expiră în {daysLeft} {daysLeft === 1 ? "zi" : "zile"}
+          </Text>
+        ) : null}
+      </View>
       {/* STAR VOTING */}
       <View
         style={{
@@ -530,7 +683,6 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
       </View>
     </>
   );
-
   // --- All footer content (accordions, admin button) ---
   const ListFooterComponent = (
     <View style={{ paddingBottom: 24 }}>
@@ -610,8 +762,6 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
     </View>
   );
 
-  // --- You might want to memoize or wrap with useCallback for perf in prod
-
   // --- Actually render FlatList as root, not ScrollView!
   return (
     <SafeArea>
@@ -647,7 +797,7 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
   );
 };
 
-// Add this outside if you want (was missing in your paste)
+// --- Helper for contacts ---
 function handlePress(type, value) {
   let url = value;
   if (type === "email") {
