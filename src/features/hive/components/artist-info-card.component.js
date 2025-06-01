@@ -1,13 +1,19 @@
 // src/features/hive/components/artist-info-card.component.js
 
 import React, { useContext, useEffect, useState } from "react";
-import { View, TouchableOpacity, ActivityIndicator } from "react-native";
+import {
+  View,
+  TouchableOpacity,
+  ActivityIndicator,
+  Dimensions,
+} from "react-native";
 import { SvgXml } from "react-native-svg";
 import { Spacer } from "../../../components/spacer/spacer.component";
 import { Text } from "../../../components/typography/text.component";
 import { Favourite } from "../../../components/favourites/favourite.component";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "styled-components/native";
+import Carousel from "react-native-reanimated-carousel";
 import star from "../../../../assets/star";
 import { AuthenticationContext } from "../../../services/authentication/authentication.context";
 import {
@@ -49,6 +55,11 @@ const categoryIcons = {
   Other: "help-circle-outline",
 };
 
+const SCREEN_WIDTH = Dimensions.get("window").width;
+const CARD_PADDING = 32; // adjust this if your card has more/less padding
+const IMAGE_WIDTH = SCREEN_WIDTH - CARD_PADDING;
+const IMAGE_HEIGHT = 220;
+
 export const ArtistInfoCard = ({ artist = {} }) => {
   const theme = useTheme();
   const { user } = useContext(AuthenticationContext);
@@ -87,6 +98,8 @@ export const ArtistInfoCard = ({ artist = {} }) => {
   const [loading, setLoading] = useState(true);
   const [average, setAverage] = useState(avgRating || 0);
   const [votes, setVotes] = useState(ratingsCount || 0);
+  const [carouselIndex, setCarouselIndex] = useState(0);
+
   const db = getFirestore();
 
   // Fetch user's rating and update local state
@@ -178,10 +191,73 @@ export const ArtistInfoCard = ({ artist = {} }) => {
 
   return (
     <ArtistCard elevation={5}>
-      <View>
+      <View style={{ position: "relative", alignItems: "center" }}>
         <Favourite artist={artist} />
-        <ArtistCardCover source={{ uri: displayPhotos[0] }} />
+        {displayPhotos.length > 1 ? (
+          <>
+            <Carousel
+              width={IMAGE_WIDTH}
+              height={IMAGE_HEIGHT}
+              data={displayPhotos}
+              style={{ borderRadius: 16, overflow: "hidden" }}
+              panGestureHandlerProps={{
+                activeOffsetX: [-10, 10],
+              }}
+              renderItem={({ item }) => (
+                <ArtistCardCover
+                  source={{ uri: item }}
+                  style={{
+                    width: IMAGE_WIDTH,
+                    height: IMAGE_HEIGHT,
+                  }}
+                  resizeMode="cover"
+                />
+              )}
+              pagingEnabled
+              loop={false}
+              snapEnabled
+              onSnapToItem={setCarouselIndex}
+            />
+            {/* Pagination Dots */}
+            <View
+              style={{
+                position: "absolute",
+                bottom: 14,
+                left: 0,
+                right: 0,
+                flexDirection: "row",
+                justifyContent: "center",
+              }}
+            >
+              {displayPhotos.map((_, idx) => (
+                <View
+                  key={idx}
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: 4,
+                    backgroundColor: "#fff",
+                    margin: 3,
+                    opacity: idx === carouselIndex ? 0.9 : 0.4,
+                  }}
+                />
+              ))}
+            </View>
+          </>
+        ) : (
+          <ArtistCardCover
+            source={{ uri: displayPhotos[0] }}
+            style={{
+              width: IMAGE_WIDTH,
+              height: IMAGE_HEIGHT,
+              borderRadius: 16,
+              marginBottom: 2,
+            }}
+            resizeMode="cover"
+          />
+        )}
       </View>
+
       <Info>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <Text variant="label">{name}</Text>
