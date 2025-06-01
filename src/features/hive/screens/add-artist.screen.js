@@ -1,6 +1,6 @@
 // src/features/hive/screens/add-artist.screen.js
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   ScrollView,
   TextInput,
@@ -14,7 +14,13 @@ import styled from "styled-components/native";
 import { Picker } from "@react-native-picker/picker";
 import * as ImagePicker from "expo-image-picker";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { GeoPoint, collection, addDoc } from "firebase/firestore";
+import {
+  GeoPoint,
+  collection,
+  addDoc,
+  serverTimestamp,
+  Timestamp,
+} from "firebase/firestore";
 
 import { SafeArea } from "../../../components/utility/safe-area.component";
 import { Text } from "../../../components/typography/text.component";
@@ -24,6 +30,7 @@ import {
   uploadBytesResumable,
   getDownloadURL,
 } from "firebase/storage";
+import { AuthenticationContext } from "../../../services/authentication/authentication.context";
 
 const Field = styled(TextInput)`
   border: 1px solid ${(p) => p.theme.colors.ui.primary};
@@ -35,6 +42,9 @@ const Field = styled(TextInput)`
 export const AddArtistScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
+
+  // **<< HERE!**
+  const { user } = useContext(AuthenticationContext);
 
   // basic info
   const [name, setName] = useState("");
@@ -164,6 +174,11 @@ export const AddArtistScreen = () => {
         photos,
         avgRating: 0,
         ratingsCount: 0,
+        createdAt: serverTimestamp(),
+        expiresAt: Timestamp.fromDate(
+          new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        ), // +30 days
+        userId: user?.uid || null,
       };
       if (coords) {
         data.location = new GeoPoint(coords.lat, coords.lng);
