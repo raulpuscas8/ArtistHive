@@ -1,28 +1,34 @@
+// src/theme/colors.js
+
 export const colors = {
   brand: {
-    primary: "#2182BD",
-    secondary: "#5282BD",
-    muted: "#C6DAF7",
+    primary: "#733B73", // Artistic purple (main accent, buttons, headers, icons)
+    secondary: "#F99551", // Vibrant orange (tabs, highlights, secondary buttons)
+    accent: "#F55654", // Bold red-orange (favourite hearts, badges, call to action)
+    green: "#91B87C", // Artistic green (success, tags, status, icons)
+    teal: "#427C80", // Muted teal (backgrounds, cards, secondary icons)
   },
   ui: {
-    primary: "#262626",
-    secondary: "#757575",
-    tertiary: "#F1F1F1",
-    quaternary: "#FFFFFF",
-    disabled: "#DEDEDE",
-    error: "#D0421B",
-    success: "#138000",
+    primary: "#733B73", // Use for primary elements (buttons, active icons)
+    secondary: "#F99551", // Secondary buttons, highlights
+    accent: "#F55654", // Alerts, favourite hearts
+    success: "#91B87C", // Success
+    info: "#427C80", // Info, secondary backgrounds
+    background: "#FAF7F2", // Soft off-white, gallery-like
+    card: "#FFFFFF", // Card backgrounds
+    disabled: "#E0E0E0", // Disabled state
+    error: "#F55654", // Use accent as error for consistency
   },
   bg: {
-    primary: "#FFFFFF",
-    secondary: "#F1F1F1",
+    primary: "#FAF7F2", // Main app background
+    secondary: "#FFFFFF", // Cards, surfaces
   },
   text: {
-    primary: "#262626",
-    secondary: "#757575",
-    disabled: "#9C9C9C",
-    inverse: "#FFFFFF",
-    error: "#D0421B",
-    success: "#138000",
+    primary: "#262626", // Main text
+    secondary: "#733B73", // Artistic purple, headers, links
+    hint: "#91B87C", // Subtle green, placeholder/hint
+    inverse: "#FFFFFF", // Text on dark or accent backgrounds
+    disabled: "#B0B0B0", // Disabled text
+    error: "#F55654", // Error text
   },
 };
