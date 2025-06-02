@@ -1,6 +1,6 @@
 // src/features/hive/screens/artist.screen.js
 
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect, useMemo } from "react";
 import {
   ActivityIndicator,
   TouchableOpacity,
@@ -61,6 +61,44 @@ export const ArtistScreen = ({ navigation }) => {
 
   const [isFavouritesToggled, setIsFavouritesToggled] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
+
+  // NEW: search/filter state
+  const [searchName, setSearchName] = useState("");
+  const [selectedLocation, setSelectedLocation] = useState("");
+
+  // Helper to get all unique locations (e.g., city from address)
+  const locations = useMemo(() => {
+    const all = artists.map((a) => {
+      // Try to extract city (third element) from address string
+      // E.g., "Strada Bucovinei, 10B, Strada Bucovinei, Alba Iulia, Alba, 510097, Romania"
+      // => Alba Iulia
+      if (!a.address) return "Unknown";
+      const addressParts = a.address.split(",");
+      // You may want to change this index based on your address format!
+      // Here, [3] is "Alba Iulia"
+      return addressParts[3]?.trim() || "Unknown";
+    });
+    return [...new Set(all.filter(Boolean))];
+  }, [artists]);
+
+  // The filtered list, based on name, location, and category
+  const displayedArtists = useMemo(() => {
+    let filtered = artists;
+    if (selectedCategory) {
+      filtered = filtered.filter((a) => a.category === selectedCategory);
+    }
+    if (searchName) {
+      filtered = filtered.filter((a) =>
+        a.name?.toLowerCase().includes(searchName.toLowerCase())
+      );
+    }
+    if (selectedLocation) {
+      filtered = filtered.filter((a) =>
+        (a.address || "").toLowerCase().includes(selectedLocation.toLowerCase())
+      );
+    }
+    return filtered;
+  }, [artists, selectedCategory, searchName, selectedLocation]);
 
   // ----------- AUTO DELETE EXPIRED ANNOUNCEMENTS -----------
   useEffect(() => {
@@ -167,10 +205,6 @@ export const ArtistScreen = ({ navigation }) => {
     );
   }
 
-  const displayedArtists = selectedCategory
-    ? artists.filter((a) => a.category === selectedCategory)
-    : artists;
-
   return (
     <SafeArea>
       {isLoading && (
@@ -179,11 +213,18 @@ export const ArtistScreen = ({ navigation }) => {
         </LoadingContainer>
       )}
 
-      {/* Search + Favourites toggle */}
+      {/* --- NEW: Search by name and filter by location --- */}
       <Search
+        searchName={searchName}
+        onSearchNameChange={setSearchName}
+        selectedLocation={selectedLocation}
+        onLocationChange={setSelectedLocation}
+        locations={locations}
         isFavouritesToggled={isFavouritesToggled}
         onFavouritesToggle={() => setIsFavouritesToggled(!isFavouritesToggled)}
       />
+      {/* --- end NEW --- */}
+
       {isFavouritesToggled && (
         <FavouritesBar
           favourites={favourites}
