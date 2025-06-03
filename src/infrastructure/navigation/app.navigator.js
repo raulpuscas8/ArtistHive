@@ -3,6 +3,7 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
+import { Text } from "react-native";
 
 import { ArtistsNavigator } from "./artists.navigator";
 import { MapScreen } from "../../features/map/screens/map.screen";
@@ -22,23 +23,71 @@ export const AppNavigator = () => (
       tabBarIcon: ({ color, size }) => (
         <Ionicons name={TAB_ICON[route.name]} size={size} color={color} />
       ),
-      tabBarActiveTintColor: "tomato",
+      tabBarActiveTintColor: "#F55654",
       tabBarInactiveTintColor: "gray",
       headerShown: false,
       tabBarStyle: {
-        backgroundColor: "#FAF7F2", // <<-- Match your app background!
-        borderTopLeftRadius: 18, // Optionally soften edges
+        backgroundColor: "#FAF7F2",
+        borderTopLeftRadius: 25,
         borderTopRightRadius: 18,
-        position: "absolute", // Optional for floating effect
-        height: 70, // Optional for bigger tab bar
+        position: "absolute",
+        height: 70,
       },
       tabBarLabelStyle: {
         fontWeight: "bold",
       },
     })}
   >
-    <Tab.Screen name="Artists" component={ArtistsNavigator} />
-    <Tab.Screen name="Map" component={MapScreen} />
-    <Tab.Screen name="Settings" component={SettingsNavigator} />
+    <Tab.Screen
+      name="Artists"
+      component={ArtistsNavigator}
+      options={{
+        tabBarLabel: ({ focused }) => (
+          <Text
+            style={{
+              color: focused ? "#F55654" : "gray",
+              fontWeight: "bold",
+              fontSize: 12,
+            }}
+          >
+            Artists
+          </Text>
+        ),
+      }}
+    />
+    <Tab.Screen
+      name="Map"
+      component={MapScreen}
+      options={{
+        tabBarLabel: ({ focused }) => (
+          <Text
+            style={{
+              color: focused ? "#F55654" : "gray",
+              fontWeight: "bold",
+              fontSize: 12,
+            }}
+          >
+            Map
+          </Text>
+        ),
+      }}
+    />
+    <Tab.Screen
+      name="Settings"
+      component={SettingsNavigator}
+      options={{
+        tabBarLabel: ({ focused }) => (
+          <Text
+            style={{
+              color: focused ? "#F55654" : "gray",
+              fontWeight: "bold",
+              fontSize: 12,
+            }}
+          >
+            Settings
+          </Text>
+        ),
+      }}
+    />
   </Tab.Navigator>
 );

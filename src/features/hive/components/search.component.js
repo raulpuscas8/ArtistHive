@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import styled from "styled-components/native";
 import { Searchbar } from "react-native-paper";
-import { FlatList, TouchableOpacity, View } from "react-native";
+import { FlatList, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import RNModal from "react-native-modal";
 
@@ -13,31 +13,37 @@ const SearchContainer = styled.View`
 `;
 
 const LocationButton = styled.TouchableOpacity`
-  margin-left: 8px;
+  height: 50px;
+  padding: 0 20px;
+  margin-left: 10px;
   background-color: #fff3e0;
   border-radius: 24px;
-  padding: 7px 14px;
   flex-direction: row;
   align-items: center;
-  border: 1px solid #ffb74d;
+  border: 3px solid #91b87c;
+  shadow-color: #ffb74d;
+  shadow-opacity: 0.1;
+  shadow-radius: 12px;
+  shadow-offset: 0px 2px;
+  elevation: 2;
 `;
 
 const ModalContainer = styled.View`
-  background-color: rgba(41, 82, 255, 0.9); /* cobalt blue */
+  background-color: rgba(224, 225, 225, 0.95);
   padding: 20px;
   border-radius: 28px;
   max-height: 400px;
   width: 80%;
   align-items: center;
-  shadow-color: #ff9800;
-  shadow-opacity: 0.15;
-  shadow-radius: 24px;
+  shadow-color: #733b73;
+  shadow-opacity: 0.13;
+  shadow-radius: 22px;
   shadow-offset: 0px 4px;
-  elevation: 10;
+  elevation: 12;
 `;
 
 const LocationLabel = styled.Text`
-  color: #f57c00;
+  color: #427c80;
   margin-left: 5px;
   font-size: 16px;
   font-weight: bold;
@@ -45,7 +51,8 @@ const LocationLabel = styled.Text`
 
 const ItemText = styled.Text`
   font-size: 17px;
-  color: #333;
+  color: #733b73;
+  font-weight: ${({ selected }) => (selected ? "bold" : "normal")};
 `;
 
 export const Search = ({
@@ -63,25 +70,27 @@ export const Search = ({
     <>
       <SearchContainer>
         <Searchbar
-          placeholder="Search by announcement name"
+          placeholder="Caută după nume"
           value={searchName}
           onChangeText={onSearchNameChange}
           style={{ flex: 1 }}
           icon={isFavouritesToggled ? "heart" : "heart-outline"}
+          size={26}
+          iconColor="#F55654"
           onIconPress={onFavouritesToggle}
         />
         <LocationButton onPress={() => setModalVisible(true)}>
-          <Ionicons name="location-outline" size={20} color="#f57c00" />
+          <Ionicons name="location-outline" size={20} color="#F55654" />
           <LocationLabel>
-            {selectedLocation ? selectedLocation : "All"}
+            {selectedLocation ? selectedLocation : "Toate"}
           </LocationLabel>
         </LocationButton>
       </SearchContainer>
       <RNModal
         isVisible={modalVisible}
         onBackdropPress={() => setModalVisible(false)}
-        backdropColor="#FFB74D"
-        backdropOpacity={0.16}
+        backdropColor="#fff"
+        backdropOpacity={0.2}
         style={{ justifyContent: "center", alignItems: "center" }}
       >
         <ModalContainer>
@@ -98,7 +107,7 @@ export const Search = ({
                   padding: 14,
                   backgroundColor:
                     item === selectedLocation
-                      ? "rgba(255, 152, 0, 0.16)"
+                      ? "rgba(245, 86, 84, 0.92)"
                       : "transparent",
                   borderRadius: 12,
                   marginBottom: 6,
@@ -106,13 +115,8 @@ export const Search = ({
                   width: "100%",
                 }}
               >
-                <ItemText
-                  style={{
-                    fontWeight: item === selectedLocation ? "bold" : "normal",
-                    color: item === selectedLocation ? "#f57c00" : "#333",
-                  }}
-                >
-                  {item ? item : "All locations"}
+                <ItemText selected={item === selectedLocation}>
+                  {item ? item : "Toate locațiile"}
                 </ItemText>
               </TouchableOpacity>
             )}
