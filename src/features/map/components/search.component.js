@@ -6,30 +6,36 @@ import { LocationContext } from "../../../services/location/location.context";
 
 const SearchContainer = styled.View`
   padding: ${(props) => props.theme.space[3]};
-  position: absolute;
-  z-index: 999;
-  top: 40px;
   width: 100%;
 `;
 
 export const Search = () => {
   const { keyword, search } = useContext(LocationContext);
   const [searchKeyword, setSearchKeyword] = useState(keyword);
+
   useEffect(() => {
     setSearchKeyword(keyword);
   }, [keyword]);
+
   return (
     <SearchContainer>
       <Searchbar
-        placeholder="Search"
+        placeholder="Caută o locație"
         icon="map"
         value={searchKeyword}
-        onSubmitEditing={() => {
-          search(searchKeyword);
+        onSubmitEditing={() => search(searchKeyword)}
+        onChangeText={setSearchKeyword}
+        inputStyle={{
+          fontSize: 18,
         }}
-        onChangeText={(text) => {
-          setSearchKeyword(text);
+        style={{
+          backgroundColor: "#fff5e6",
+          borderRadius: 20,
+          borderColor: "#733B73",
+          borderWidth: 1,
+          elevation: 4,
         }}
+        placeholderTextColor="#733B73"
       />
     </SearchContainer>
   );

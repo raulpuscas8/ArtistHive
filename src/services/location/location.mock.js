@@ -1,82 +1,71 @@
-export const locations = {
-  antwerp: {
-    results: [
-      {
-        geometry: {
-          location: {
-            lng: 4.402464,
-            lat: 51.219448,
-          },
-          viewport: {
-            northeast: {
-              lat: 51.2145994302915,
-              lng: 4.418074130291502,
-            },
-            southwest: {
-              lat: 51.2119014697085,
-              lng: 4.415376169708497,
-            },
-          },
-        },
-      },
-    ],
+// src/services/location/location.context.js
+
+import React, { createContext, useState, useEffect } from "react";
+import * as Location from "expo-location";
+
+export const LocationContext = createContext();
+
+const DEFAULT_LOCATION = {
+  lat: 45.7489, // Timișoara
+  lng: 21.2087,
+  viewport: {
+    northeast: { lat: 45.7589, lng: 21.2187 },
+    southwest: { lat: 45.7389, lng: 21.1987 },
   },
-  "san francisco": {
-    results: [
-      {
-        geometry: {
-          location: { lat: 37.7749295, lng: -122.4194155 },
-          viewport: {
-            northeast: { lat: 37.812, lng: -122.3482 },
-            southwest: { lat: 37.70339999999999, lng: -122.527 },
-          },
-        },
-      },
-    ],
-    status: "OK",
-  },
-  chicago: {
-    results: [
-      {
-        geometry: {
-          location: {
-            lng: -87.629799,
-            lat: 41.878113,
-          },
-          viewport: {
-            northeast: {
-              lat: 41.88758823029149,
-              lng: -87.6194830697085,
-            },
-            southwest: {
-              lat: 41.88489026970849,
-              lng: -87.6221810302915,
-            },
-          },
-        },
-      },
-    ],
-  },
-  toronto: {
-    results: [
-      {
-        geometry: {
-          location: {
-            lng: -79.383186,
-            lat: 43.653225,
-          },
-          viewport: {
-            northeast: {
-              lat: 43.64794098029149,
-              lng: -79.37325551970848,
-            },
-            southwest: {
-              lat: 43.6452430197085,
-              lng: -79.37595348029149,
-            },
-          },
-        },
-      },
-    ],
-  },
+};
+
+export const LocationContextProvider = ({ children }) => {
+  const [keyword, setKeyword] = useState("");
+  const [location, setLocation] = useState(DEFAULT_LOCATION);
+
+  const search = (searchKeyword) => {
+    setKeyword(searchKeyword);
+  };
+
+  useEffect(() => {
+    let isActive = true;
+
+    const forwardGeocode = async () => {
+      // If the search bar is empty, always show default location!
+      if (!keyword || keyword.trim() === "") {
+        setLocation(DEFAULT_LOCATION);
+        return;
+      }
+      try {
+        const results = await Location.geocodeAsync(keyword);
+        if (isActive && results.length > 0) {
+          const { latitude, longitude } = results[0];
+          const delta = 0.01;
+          const viewport = {
+            northeast: { lat: latitude + delta, lng: longitude + delta },
+            southwest: { lat: latitude - delta, lng: longitude - delta },
+          };
+          setLocation({
+            lat: latitude,
+            lng: longitude,
+            viewport,
+          });
+        }
+      } catch (err) {
+        console.error("LocationContext geocode failed:", err);
+      }
+    };
+
+    forwardGeocode();
+    return () => {
+      isActive = false;
+    };
+  }, [keyword]);
+
+  return (
+    <LocationContext.Provider
+      value={{
+        location,
+        search,
+        keyword,
+      }}
+    >
+      {children}
+    </LocationContext.Provider>
+  );
 };
