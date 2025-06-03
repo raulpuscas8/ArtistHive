@@ -31,6 +31,7 @@ import {
 
 import { getStorage, ref as storageRef, deleteObject } from "firebase/storage";
 
+// ========== Styled Components ==========
 const Loading = styled(ActivityIndicator)`
   margin-left: -25px;
 `;
@@ -41,19 +42,33 @@ const LoadingContainer = styled.View`
   left: 50%;
 `;
 
-// remove vertical padding so it hugs the ScrollView height
-const CategoryFilterContainer = styled.View`
-  flex-direction: row;
-  padding: 0;
+// Main floating background for categories
+const CategoriesBackground = styled.View`
+  background-color: ${(props) => props.theme.colors.bg.secondary};
+  border-radius: 24px;
+  margin: 14px 16px 0px 16px; /* Top, sides */
+  padding: 8px 0px;
+  /* Optional shadow for floating effect */
+  shadow-color: #000;
+  shadow-opacity: 0.04;
+  shadow-radius: 16px;
+  elevation: 2;
 `;
 
+// The individual category button "pills"
 const CategoryButton = styled(TouchableOpacity)`
-  margin: 0 ${({ theme }) => theme.space[2]};
+  flex-direction: column;
   align-items: center;
-
-  padding-top: ${({ theme }) => theme.space[1]};
+  justify-content: center;
+  margin-right: ${({ theme }) => theme.space[2]};
+  margin-left: ${({ theme }) => theme.space[1]};
+  padding: 8px 12px;
+  border-radius: 18px;
+  background-color: ${({ selected, theme }) =>
+    selected ? "#f3e7f7" : "transparent"};
 `;
 
+// ========== Component ==========
 export const ArtistScreen = ({ navigation }) => {
   const theme = useTheme();
   const { isLoading, artists, error } = useContext(ArtistsContext);
@@ -62,26 +77,20 @@ export const ArtistScreen = ({ navigation }) => {
   const [isFavouritesToggled, setIsFavouritesToggled] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
 
-  // NEW: search/filter state
+  // search/filter state
   const [searchName, setSearchName] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("");
 
   // Helper to get all unique locations (e.g., city from address)
   const locations = useMemo(() => {
     const all = artists.map((a) => {
-      // Try to extract city (third element) from address string
-      // E.g., "Strada Bucovinei, 10B, Strada Bucovinei, Alba Iulia, Alba, 510097, Romania"
-      // => Alba Iulia
       if (!a.address) return "Unknown";
       const addressParts = a.address.split(",");
-      // You may want to change this index based on your address format!
-      // Here, [3] is "Alba Iulia"
       return addressParts[3]?.trim() || "Unknown";
     });
     return [...new Set(all.filter(Boolean))];
   }, [artists]);
 
-  // The filtered list, based on name, location, and category
   const displayedArtists = useMemo(() => {
     let filtered = artists;
     if (selectedCategory) {
@@ -115,10 +124,8 @@ export const ArtistScreen = ({ navigation }) => {
           const data = docSnap.data();
           const expiresAt = data.expiresAt?.toDate?.();
           if (expiresAt && expiresAt < now) {
-            // Delete all images in Storage (if any)
             if (data.photos && Array.isArray(data.photos)) {
               for (const url of data.photos) {
-                // Parse the storage path from the URL
                 const base = "https://firebasestorage.googleapis.com/v0/b/";
                 if (url.startsWith(base)) {
                   const pathMatch =
@@ -156,9 +163,6 @@ export const ArtistScreen = ({ navigation }) => {
 
     deleteExpiredAnnouncements();
   }, []);
-  // ---------------------------------------------------------
-
-  // DEBUG: inspect the artists payload
   useEffect(() => {
     console.log("🔥 artists payload:", artists);
   }, [artists]);
@@ -187,7 +191,7 @@ export const ArtistScreen = ({ navigation }) => {
     Photography: "camera-outline",
     "Digital Art": "desktop-outline",
     PrintMaking: "print-outline",
-    Ceramics: "mud-outline",
+    Ceramics: "rose-outline",
     "Textile & Fiber": "shirt-outline",
     "Jewelry & Wearables": "diamond-outline",
     "Graphic Design & Illustration": "brush-outline",
@@ -223,32 +227,31 @@ export const ArtistScreen = ({ navigation }) => {
         isFavouritesToggled={isFavouritesToggled}
         onFavouritesToggle={() => setIsFavouritesToggled(!isFavouritesToggled)}
       />
-      {/* --- end NEW --- */}
 
       {isFavouritesToggled && (
         <FavouritesBar
-          favourites={favourites}
+          favourites={artists.filter((a) => favourites.includes(a.id))}
           onNavigate={navigation.navigate}
         />
       )}
 
-      {/* 1. Category filter bar */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={{ flexGrow: 0 }}
-        contentContainerStyle={{
-          paddingHorizontal: 16,
-          flexGrow: 0,
-          alignItems: "center",
-        }}
-      >
-        <CategoryFilterContainer>
+      {/* ---- Category filter bar ---- */}
+      <CategoriesBackground>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            paddingHorizontal: 8,
+            alignItems: "center",
+          }}
+          style={{ flexGrow: 0 }}
+        >
           {categories.map((cat) => {
             const isSelected = selectedCategory === cat;
             return (
               <CategoryButton
                 key={cat}
+                selected={isSelected}
                 onPress={() => setSelectedCategory(isSelected ? null : cat)}
               >
                 <Ionicons
@@ -257,13 +260,17 @@ export const ArtistScreen = ({ navigation }) => {
                   color={
                     isSelected
                       ? theme.colors.ui.primary
-                      : theme.colors.ui.disabled
+                      : theme.colors.text.primary
                   }
                 />
                 <Spacer position="top" size="small">
                   <Text
                     variant="caption"
-                    color={isSelected ? "ui.primary" : "ui.disabled"}
+                    style={{
+                      color: isSelected
+                        ? theme.colors.ui.primary
+                        : theme.colors.ui.primary,
+                    }}
                   >
                     {cat}
                   </Text>
@@ -271,27 +278,30 @@ export const ArtistScreen = ({ navigation }) => {
               </CategoryButton>
             );
           })}
-        </CategoryFilterContainer>
-      </ScrollView>
+        </ScrollView>
+      </CategoriesBackground>
 
-      {/* 2. Artist list, filtered */}
+      {/* ---- Artist list, filtered ---- */}
       <ArtistList
         data={displayedArtists}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            onPress={() =>
-              navigation.navigate("ArtistDetail", {
-                artist: item,
-              })
-            }
-          >
-            <Spacer position="bottom" size="large">
-              <FadeInView>
-                <ArtistInfoCard artist={item} />
-              </FadeInView>
-            </Spacer>
-          </TouchableOpacity>
-        )}
+        renderItem={({ item }) => {
+          const isFavourite = favourites.includes(item.id);
+          return (
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate("ArtistDetail", {
+                  artist: item,
+                })
+              }
+            >
+              <Spacer position="bottom" size="large">
+                <FadeInView>
+                  <ArtistInfoCard artist={item} isFavourite={isFavourite} />
+                </FadeInView>
+              </Spacer>
+            </TouchableOpacity>
+          );
+        }}
         keyExtractor={(item) => item.id}
       />
     </SafeArea>

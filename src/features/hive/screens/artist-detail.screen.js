@@ -16,6 +16,7 @@ import { ArtistInfoCard } from "../components/artist-info-card.component";
 import { SafeArea } from "../../../components/utility/safe-area.component";
 import { Button } from "react-native";
 import { Text } from "../../../components/typography/text.component";
+import { FavouritesContext } from "../../../services/favourites/favourites.context";
 import { AuthenticationContext } from "../../../services/authentication/authentication.context";
 import {
   getFirestore,
@@ -113,6 +114,10 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
       name: artist.name,
     });
   };
+
+  // Favourite
+  const { favourites, addToFavourites, removeFromFavourites } =
+    useContext(FavouritesContext);
 
   // --- Load rating info (live) ---
   useEffect(() => {
@@ -585,7 +590,32 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
   // --- All header content (everything above comments) ---
   const ListHeaderComponent = (
     <>
-      <ArtistInfoCard artist={artist} />
+      <View style={{ position: "relative" }}>
+        <ArtistInfoCard artist={artist} />
+        <TouchableOpacity
+          onPress={() =>
+            favourites.includes(artist.id)
+              ? removeFromFavourites(artist.id)
+              : addToFavourites(artist.id)
+          }
+          style={{
+            position: "absolute",
+            top: 16,
+            right: 16,
+            backgroundColor: "rgba(255,255,255,0.7)",
+            borderRadius: 20,
+            padding: 6,
+            zIndex: 10,
+          }}
+        >
+          <Ionicons
+            name={favourites.includes(artist.id) ? "heart" : "heart-outline"}
+            size={28}
+            color={favourites.includes(artist.id) ? "red" : "grey"}
+          />
+        </TouchableOpacity>
+      </View>
+
       <ExtendBanner />
       {/* Expiry status */}
       <View style={{ paddingHorizontal: 20, marginTop: 10, marginBottom: 2 }}>

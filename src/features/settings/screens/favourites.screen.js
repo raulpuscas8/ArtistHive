@@ -1,49 +1,47 @@
-import React, { useContext } from "react";
-import styled from "styled-components/native";
-import { TouchableOpacity } from "react-native";
-import { FavouritesContext } from "../../../services/favourites/favourites.context";
+// src/features/account/screens/favourites.screen.js
 
+import React, { useContext } from "react";
 import { SafeArea } from "../../../components/utility/safe-area.component";
+import { FavouritesContext } from "../../../services/favourites/favourites.context";
+import { ArtistsContext } from "../../../services/hive/artists.context";
+import { ArtistInfoCard } from "../../hive/components/artist-info-card.component";
+import { FlatList, TouchableOpacity } from "react-native";
 import { Text } from "../../../components/typography/text.component";
 import { Spacer } from "../../../components/spacer/spacer.component";
 
-import { ArtistList } from "../../hive/components/artist-list.styles";
-import { ArtistInfoCard } from "../../hive/components/artist-info-card.component";
-
-const NoFavouritesArea = styled(SafeArea)`
-  align-items: center;
-  justify-content: center;
-`;
-
 export const FavouritesScreen = ({ navigation }) => {
   const { favourites } = useContext(FavouritesContext);
+  const { artists } = useContext(ArtistsContext);
 
-  return favourites.length ? (
+  // Only show favourited artists
+  const favouriteArtists = artists.filter((artist) =>
+    favourites.includes(artist.id)
+  );
+
+  return (
     <SafeArea>
-      <ArtistList
-        data={favourites}
-        renderItem={({ item }) => {
-          return (
+      {favouriteArtists.length === 0 ? (
+        <Text variant="caption" style={{ margin: 32, textAlign: "center" }}>
+          You don't have any favourites yet.
+        </Text>
+      ) : (
+        <FlatList
+          data={favouriteArtists}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
             <TouchableOpacity
               onPress={() =>
-                navigation.navigate("Artists", {
-                  screen: "ArtistDetail",
-                  params: { artist: item },
-                })
+                navigation.navigate("ArtistDetail", { artist: item })
               }
             >
               <Spacer position="bottom" size="large">
                 <ArtistInfoCard artist={item} />
               </Spacer>
             </TouchableOpacity>
-          );
-        }}
-        keyExtractor={(item) => item.name}
-      />
+          )}
+          contentContainerStyle={{ paddingBottom: 32 }}
+        />
+      )}
     </SafeArea>
-  ) : (
-    <NoFavouritesArea>
-      <Text center>No favourites yet</Text>
-    </NoFavouritesArea>
   );
 };

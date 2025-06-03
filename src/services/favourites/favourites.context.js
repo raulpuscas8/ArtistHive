@@ -6,7 +6,7 @@ export const FavouritesContext = createContext();
 
 export const FavouritesContextProvider = ({ children }) => {
   const { user } = useContext(AuthenticationContext);
-  const [favourites, setFavourites] = useState([]);
+  const [favourites, setFavourites] = useState([]); // Array of artist IDs
 
   const saveFavourites = async (value, uid) => {
     try {
@@ -35,16 +35,16 @@ export const FavouritesContextProvider = ({ children }) => {
     }
   };
 
-  const add = (artist) => {
-    const newFavourites = [...favourites, { ...artist }];
-    setFavourites(newFavourites);
-    saveFavourites(newFavourites, user.uid);
+  const add = (artistId) => {
+    if (!favourites.includes(artistId)) {
+      const newFavourites = [...favourites, artistId];
+      setFavourites(newFavourites);
+      saveFavourites(newFavourites, user.uid);
+    }
   };
 
-  const remove = (artist) => {
-    const newFavourites = favourites.filter(
-      (x) => x.placeId !== artist.placeId
-    );
+  const remove = (artistId) => {
+    const newFavourites = favourites.filter((id) => id !== artistId);
     setFavourites(newFavourites);
     saveFavourites(newFavourites, user.uid);
   };
@@ -60,7 +60,7 @@ export const FavouritesContextProvider = ({ children }) => {
   return (
     <FavouritesContext.Provider
       value={{
-        favourites,
+        favourites, // Array of artist IDs
         addToFavourites: add,
         removeFromFavourites: remove,
       }}

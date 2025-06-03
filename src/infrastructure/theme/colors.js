@@ -20,7 +20,7 @@ export const colors = {
     error: "#F55654", // Use accent as error for consistency
   },
   bg: {
-    primary: "#FAF7F2", // Main app background
+    primary: "#427C80", // Main app background
     secondary: "#FFFFFF", // Cards, surfaces
   },
   text: {
@@ -32,3 +32,4 @@ export const colors = {
     error: "#F55654", // Error text
   },
 };
+//#733b73, #f55654, #f99551, #ffd58c, #91b87c, #427c80
