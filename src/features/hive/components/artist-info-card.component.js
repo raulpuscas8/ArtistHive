@@ -10,7 +10,7 @@ import {
 import { SvgXml } from "react-native-svg";
 import { Spacer } from "../../../components/spacer/spacer.component";
 import { Text } from "../../../components/typography/text.component";
-import { Favourite } from "../../../components/favourites/favourite.component";
+import { FavouritesContext } from "../../../services/favourites/favourites.context";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "styled-components/native";
 import Carousel from "react-native-reanimated-carousel";
@@ -45,7 +45,7 @@ const categoryIcons = {
   Photography: "camera-outline",
   "Digital Art": "desktop-outline",
   PrintMaking: "print-outline",
-  Ceramics: "mud-outline",
+  Ceramics: "rose-outline",
   "Textile & Fiber": "shirt-outline",
   "Jewelry & Wearables": "diamond-outline",
   "Graphic Design & Illustration": "brush-outline",
@@ -189,10 +189,35 @@ export const ArtistInfoCard = ({ artist = {} }) => {
     });
   };
 
+  //Favourite
+  const { favourites, addToFavourites, removeFromFavourites } =
+    useContext(FavouritesContext);
+
+  const isFavourite = favourites.includes(id);
+
   return (
     <ArtistCard elevation={5}>
       <View style={{ position: "relative", alignItems: "center" }}>
-        <Favourite artist={artist} />
+        <TouchableOpacity
+          onPress={() =>
+            isFavourite ? removeFromFavourites(id) : addToFavourites(id)
+          }
+          style={{
+            position: "absolute",
+            top: 14,
+            right: 14,
+            zIndex: 10,
+            backgroundColor: "rgba(255,255,255,0.7)",
+            borderRadius: 16,
+            padding: 4,
+          }}
+        >
+          <Ionicons
+            name={isFavourite ? "heart" : "heart-outline"}
+            size={28}
+            color={isFavourite ? "red" : "grey"}
+          />
+        </TouchableOpacity>
         {displayPhotos.length > 1 ? (
           <>
             <Carousel

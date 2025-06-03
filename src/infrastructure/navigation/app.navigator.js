@@ -25,6 +25,16 @@ export const AppNavigator = () => (
       tabBarActiveTintColor: "tomato",
       tabBarInactiveTintColor: "gray",
       headerShown: false,
+      tabBarStyle: {
+        backgroundColor: "#FAF7F2", // <<-- Match your app background!
+        borderTopLeftRadius: 18, // Optionally soften edges
+        borderTopRightRadius: 18,
+        position: "absolute", // Optional for floating effect
+        height: 70, // Optional for bigger tab bar
+      },
+      tabBarLabelStyle: {
+        fontWeight: "bold",
+      },
     })}
   >
     <Tab.Screen name="Artists" component={ArtistsNavigator} />
