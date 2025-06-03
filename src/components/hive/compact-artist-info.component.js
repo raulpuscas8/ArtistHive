@@ -31,7 +31,17 @@ export const CompactArtistInfo = ({ artist, isMap }) => {
   return (
     <Item>
       <Image source={{ uri: artist.photos[0] }} />
-      <Text center variant="caption" numberOfLines={3}>
+      <Text
+        center
+        variant="caption"
+        numberOfLines={3}
+        style={{
+          fontSize: 16, // <--- make this as big as you want!
+          fontWeight: "bold", // <--- bold for clarity
+          marginTop: 6,
+          color: "#733B73", // consistent text color
+        }}
+      >
         {artist.name}
       </Text>
     </Item>
