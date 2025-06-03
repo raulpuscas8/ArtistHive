@@ -20,7 +20,7 @@ export const MapPickerScreen = ({ navigation }) => {
   const [region, setRegion] = useState(null);
   const [loadingLocation, setLoadingLocation] = useState(true);
 
-  // 1) Get device's current location for initial map center
+  // Get device's current location for initial map center
   useEffect(() => {
     (async () => {
       try {
@@ -46,7 +46,7 @@ export const MapPickerScreen = ({ navigation }) => {
     })();
   }, []);
 
-  // 2) If user searches via Search bar, update region accordingly
+  // If user searches via Search bar, update region accordingly
   useEffect(() => {
     if (location) {
       const { lat, lng, viewport } = location;
@@ -105,9 +105,11 @@ export const MapPickerScreen = ({ navigation }) => {
   }
 
   return (
-    <View style={StyleSheet.absoluteFill}>
-      {/* Search by city/place */}
-      <Search />
+    <View style={{ flex: 1 }}>
+      {/* Search bar overlay */}
+      <View style={styles.searchOverlay}>
+        <Search />
+      </View>
       <MapView
         style={StyleSheet.absoluteFill}
         region={region}
@@ -125,6 +127,13 @@ export const MapPickerScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
+  searchOverlay: {
+    position: "absolute",
+    top: 38,
+    left: 10,
+    right: 10,
+    zIndex: 10,
+  },
   button: {
     position: "absolute",
     bottom: 40,

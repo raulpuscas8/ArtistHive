@@ -5,27 +5,36 @@ import * as Location from "expo-location";
 
 export const LocationContext = createContext();
 
-export const LocationContextProvider = ({ children }) => {
-  // the current text in the search bar
-  const [keyword, setKeyword] = useState("Search for a location");
-  // the geocoded result we share with consumers
-  const [location, setLocation] = useState(null);
+const DEFAULT_LOCATION = {
+  lat: 45.7489, // Timișoara
+  lng: 21.2087,
+  viewport: {
+    northeast: { lat: 45.7589, lng: 21.2187 },
+    southwest: { lat: 45.7389, lng: 21.1987 },
+  },
+};
 
-  // <-- called by your Search component -->
+export const LocationContextProvider = ({ children }) => {
+  const [keyword, setKeyword] = useState("");
+  const [location, setLocation] = useState(DEFAULT_LOCATION);
+
   const search = (searchKeyword) => {
     setKeyword(searchKeyword);
   };
 
-  // whenever `keyword` changes, forward‐geocode it:
   useEffect(() => {
     let isActive = true;
+
     const forwardGeocode = async () => {
+      // If the search bar is empty, always show default location!
+      if (!keyword || keyword.trim() === "") {
+        setLocation(DEFAULT_LOCATION);
+        return;
+      }
       try {
-        // geocodeAsync works in Expo Go on iOS & Android
         const results = await Location.geocodeAsync(keyword);
         if (isActive && results.length > 0) {
           const { latitude, longitude } = results[0];
-          // build a viewport so your map zooms reasonably
           const delta = 0.01;
           const viewport = {
             northeast: { lat: latitude + delta, lng: longitude + delta },

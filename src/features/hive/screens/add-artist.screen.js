@@ -213,29 +213,29 @@ export const AddArtistScreen = () => {
   };
 
   const handleSubmit = async () => {
-    // require the essential fields
+    // require the essential fields ONLY (website and photos NOT required)
     if (
-      !name ||
-      !address ||
-      !description ||
-      !email ||
-      !price ||
-      !currency ||
-      (!photoUrl.trim() && localPhotos.length === 0)
+      !name.trim() ||
+      !address.trim() ||
+      !description.trim() ||
+      !email.trim() ||
+      !price.trim() ||
+      !currency.trim()
     ) {
       return Alert.alert("All required fields must be filled");
     }
+
     if (isNaN(price) || Number(price) <= 0) {
       return Alert.alert("Price must be a positive number");
     }
     setLoading(true);
     try {
-      // remote URLs
+      // remote URLs (optional)
       const remote = photoUrl
         .split(",")
         .map((u) => u.trim())
         .filter(Boolean);
-      // upload locals
+      // upload locals (optional)
       const uploads = await Promise.all(localPhotos.map(uploadPhoto));
       const photos = [...remote, ...uploads];
 
@@ -247,11 +247,11 @@ export const AddArtistScreen = () => {
         category,
         description,
         email,
-        phone,
-        website,
+        phone, // optional
+        website, // optional
         price: parseFloat(price),
         currency,
-        photos,
+        photos, // can be empty
         avgRating: 0,
         ratingsCount: 0,
         createdAt: serverTimestamp(),
@@ -377,6 +377,9 @@ export const AddArtistScreen = () => {
           <Label>Adresă</Label>
           <Row>
             <Field
+              placeholder="Adresa"
+              value={address}
+              onChangeText={setAddress}
               style={[
                 { flex: 1, marginBottom: 0, marginRight: 10 },
                 fieldFocused
@@ -393,6 +396,7 @@ export const AddArtistScreen = () => {
               <ButtonText>{coords ? "✔️" : "📍"}</ButtonText>
             </StyledButton>
           </Row>
+
           <Spacer />
           <Label>Categorie</Label>
           <PickerContainer>
@@ -429,6 +433,8 @@ export const AddArtistScreen = () => {
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
             onFocus={() => setFieldFocused(true)}
             onBlur={() => setFieldFocused(false)}
             style={
@@ -442,6 +448,7 @@ export const AddArtistScreen = () => {
                 : {}
             }
           />
+
           <Label>Telefon</Label>
           <Field
             placeholder="+40 123 456 789"
@@ -483,6 +490,10 @@ export const AddArtistScreen = () => {
           <Label>Preț</Label>
           <Row>
             <Field
+              placeholder="Preț"
+              value={price}
+              onChangeText={setPrice}
+              keyboardType="numeric"
               style={[
                 { flex: 1, marginBottom: 0, marginRight: 10 },
                 fieldFocused
