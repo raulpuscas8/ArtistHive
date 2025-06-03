@@ -9,6 +9,7 @@ import {
   Alert,
   Image,
   ActivityIndicator,
+  TouchableOpacity,
 } from "react-native";
 import styled from "styled-components/native";
 import { Picker } from "@react-native-picker/picker";
@@ -21,10 +22,12 @@ import {
   serverTimestamp,
   Timestamp,
 } from "firebase/firestore";
+import { LinearGradient } from "expo-linear-gradient";
 
 import { SafeArea } from "../../../components/utility/safe-area.component";
 import { Text } from "../../../components/typography/text.component";
 import { db, storage } from "../../../utils/firebase.config";
+import { Ionicons } from "@expo/vector-icons";
 import {
   ref as storageRef,
   uploadBytesResumable,
@@ -32,11 +35,87 @@ import {
 } from "firebase/storage";
 import { AuthenticationContext } from "../../../services/authentication/authentication.context";
 
+const Card = styled.View`
+  background-color: rgba(255, 255, 255, 0.85);
+  border-radius: 28px;
+  padding: 24px;
+  shadow-color: #000;
+  shadow-opacity: 0.14;
+  shadow-radius: 16px;
+  elevation: 8;
+  margin-bottom: 20px;
+  margin-top: 5px;
+  backdrop-filter: blur(12px);
+`;
+
+const StyledButton = styled.TouchableOpacity`
+  background-color: #f55654;
+  border-radius: 12px;
+  padding: 14px;
+  align-items: center;
+  margin-bottom: 1px;
+`;
+
+const ButtonText = styled.Text`
+  color: #fff;
+  font-weight: 600;
+  font-size: 17px;
+`;
+
+const Label = styled(Text)`
+  margin-bottom: 7px;
+  font-size: 17px;
+  color: #321b47;
+  text-align: left;
+`;
+
 const Field = styled(TextInput)`
-  border: 1px solid ${(p) => p.theme.colors.ui.primary};
-  margin-bottom: ${(p) => p.theme.space[3]};
-  padding: ${(p) => p.theme.space[2]};
-  border-radius: 4px;
+  border: 1.5px solid #e5d7ee;
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 16px;
+  background: #f8f4fc;
+  color: #321b47;
+  text-align: center;
+`;
+
+const PickerContainer = styled.View`
+  border: 1.5px solid #91b87c;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  background: #f8f4fc;
+  overflow: hidden;
+  height: 60px;
+  justify-content: center;
+`;
+
+const ImagePreview = styled.Image`
+  width: 70px;
+  height: 70px;
+  border-radius: 10px;
+  margin-right: 8px;
+  margin-top: 8px;
+  border-width: 1px;
+  border-color: #91b87c;
+`;
+
+const Row = styled.View`
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 10px;
+`;
+
+const Spacer = styled.View`
+  height: 10px;
+`;
+
+const Divider = styled.View`
+  height: 1px;
+  background: #e5d7ee;
+  margin-vertical: 20px;
+  border-radius: 8px;
+  opacity: 0.6;
 `;
 
 export const AddArtistScreen = () => {
@@ -57,6 +136,7 @@ export const AddArtistScreen = () => {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [website, setWebsite] = useState("");
+  const [fieldFocused, setFieldFocused] = useState(false);
 
   // price & currency
   const [price, setPrice] = useState("");
@@ -211,156 +291,261 @@ export const AddArtistScreen = () => {
   };
 
   return (
-    <SafeArea>
-      <ScrollView contentContainerStyle={{ padding: 16 }}>
-        {/* Name */}
-        <Text variant="label">Name</Text>
-        <Field
-          placeholder="e.g. Jane Doe"
-          value={name}
-          onChangeText={setName}
-        />
-
-        {/* Address & Map Picker */}
-        <Text variant="label">Address</Text>
-        <Field
-          placeholder="e.g. 123 Art St"
-          value={address}
-          onChangeText={setAddress}
-        />
-        <Button
-          title={coords ? "✔️ Location Set" : "Pick on Map"}
-          onPress={() =>
-            navigation.navigate("MapPicker", {
-              // no payload needed; we read back via route.params
-            })
-          }
-        />
-
-        {/* Category */}
-        <Text variant="label">Category</Text>
-        <View
+    <SafeArea style={{ flex: 1, backgroundColor: "#91B87C" }}>
+      <ScrollView
+        contentContainerStyle={{
+          padding: 18,
+          backgroundColor: "#91B87C",
+          minHeight: "100%",
+        }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <TouchableOpacity
+          onPress={() => navigation.openDrawer()}
           style={{
-            borderWidth: 1,
-            borderColor: "#ccc",
-            borderRadius: 4,
-            marginBottom: 16,
+            position: "absolute",
+            top: 1,
+            left: 22,
+            zIndex: 10,
+            backgroundColor: "#fff",
+            borderRadius: 18,
+            padding: 7,
+            elevation: 6,
+            shadowColor: "#000",
+            shadowOpacity: 0.14,
+            shadowRadius: 5,
           }}
         >
-          <Picker selectedValue={category} onValueChange={setCategory}>
-            {categories.map((cat) => (
-              <Picker.Item label={cat} value={cat} key={cat} />
-            ))}
-          </Picker>
-        </View>
+          <Ionicons name="menu" size={28} color="#321b47" />
+        </TouchableOpacity>
 
-        {/* Description */}
-        <Text variant="label">Description</Text>
-        <Field
-          placeholder="Tell us about your work…"
-          value={description}
-          onChangeText={setDescription}
-          multiline
-          numberOfLines={4}
-          textAlignVertical="top"
-        />
-
-        {/* Contact */}
-        <Text variant="label">Email</Text>
-        <Field
-          placeholder="artist@example.com"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-        />
-
-        <Text variant="label">Phone</Text>
-        <Field
-          placeholder="+40 123 456 789"
-          value={phone}
-          onChangeText={setPhone}
-          keyboardType="phone-pad"
-        />
-
-        <Text variant="label">Website</Text>
-        <Field
-          placeholder="https://…"
-          value={website}
-          onChangeText={setWebsite}
-          keyboardType="url"
-        />
-
-        {/* Pricing */}
-        <Text variant="label">Pricing</Text>
-        <Field
-          placeholder="e.g. 100"
-          value={price}
-          onChangeText={setPrice}
-          keyboardType="numeric"
-        />
-        <Text variant="label" style={{ marginTop: 0 }}>
-          Currency
-        </Text>
-        <View
+        <LinearGradient
+          colors={["#91B87C", "#91B87C"]}
           style={{
-            borderWidth: 1,
-            borderColor: "#ccc",
-            borderRadius: 4,
-            marginBottom: 16,
-            marginTop: 0,
-            overflow: "hidden",
-            height: 120, // Make picker tall, just like category
-            justifyContent: "center",
+            borderTopLeftRadius: 0,
+            borderTopRightRadius: 0,
+            borderBottomLeftRadius: 38,
+            borderBottomRightRadius: 38,
+            height: 110,
+            width: "110%",
+            marginLeft: "-5%",
+            marginTop: -22,
+            alignSelf: "center",
+            justifyContent: "flex-end",
+            paddingBottom: 18,
+            shadowColor: "#000",
+            shadowOpacity: 0.15,
+            shadowRadius: 18,
+            elevation: 4,
           }}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
         >
-          <Picker
-            selectedValue={currency}
-            onValueChange={setCurrency}
+          <Text
             style={{
-              height: 120, // Make picker tall for iOS spinner style
-              width: "100%",
+              color: "#321b47",
+              fontSize: 36,
+              fontWeight: "bold",
+              alignSelf: "center",
+              marginBottom: 5,
+              letterSpacing: 1,
             }}
-            itemStyle={{ fontSize: 24, height: 120, textAlign: "center" }} // makes the items more visible/centered
           >
-            <Picker.Item label="Lei (RON)" value="RON" />
-            <Picker.Item label="Euro (EUR)" value="EUR" />
-            <Picker.Item label="USD" value="USD" />
-          </Picker>
-        </View>
+            🎨 Artă nouă? Vinde!
+          </Text>
+        </LinearGradient>
 
-        {/* Photos */}
-        <Text variant="label">Photos (comma-separated URLs)</Text>
-        <Field
-          placeholder="https://…jpg, https://…jpg"
-          value={photoUrl}
-          onChangeText={setPhotoUrl}
-        />
+        <Card>
+          <Label>Nume</Label>
+          <Field
+            placeholder="Raul"
+            value={name}
+            onChangeText={setName}
+            onFocus={() => setFieldFocused(true)}
+            onBlur={() => setFieldFocused(false)}
+            style={
+              fieldFocused
+                ? {
+                    shadowColor: "#91B87C",
+                    shadowOpacity: 0.18,
+                    shadowRadius: 8,
+                    elevation: 3,
+                  }
+                : {}
+            }
+          />
+          <Label>Adresă</Label>
+          <Row>
+            <Field
+              style={[
+                { flex: 1, marginBottom: 0, marginRight: 10 },
+                fieldFocused
+                  ? {
+                      shadowColor: "#91B87C",
+                      shadowOpacity: 0.18,
+                      shadowRadius: 8,
+                      elevation: 3,
+                    }
+                  : {},
+              ]}
+            />
+            <StyledButton onPress={() => navigation.navigate("MapPicker")}>
+              <ButtonText>{coords ? "✔️" : "📍"}</ButtonText>
+            </StyledButton>
+          </Row>
+          <Spacer />
+          <Label>Categorie</Label>
+          <PickerContainer>
+            <Picker selectedValue={category} onValueChange={setCategory}>
+              {categories.map((cat) => (
+                <Picker.Item label={cat} value={cat} key={cat} />
+              ))}
+            </Picker>
+          </PickerContainer>
+          <Label>Descriere</Label>
+          <Field
+            placeholder="Spune ceva despre arta ta…"
+            value={description}
+            onChangeText={setDescription}
+            multiline
+            numberOfLines={4}
+            textAlignVertical="top"
+            onFocus={() => setFieldFocused(true)}
+            onBlur={() => setFieldFocused(false)}
+            style={
+              fieldFocused
+                ? {
+                    shadowColor: "#91B87C",
+                    shadowOpacity: 0.18,
+                    shadowRadius: 8,
+                    elevation: 3,
+                  }
+                : {}
+            }
+          />
+          <Label>Email</Label>
+          <Field
+            placeholder="artist@exemplu.ro"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            onFocus={() => setFieldFocused(true)}
+            onBlur={() => setFieldFocused(false)}
+            style={
+              fieldFocused
+                ? {
+                    shadowColor: "#91B87C",
+                    shadowOpacity: 0.18,
+                    shadowRadius: 8,
+                    elevation: 3,
+                  }
+                : {}
+            }
+          />
+          <Label>Telefon</Label>
+          <Field
+            placeholder="+40 123 456 789"
+            value={phone}
+            onChangeText={setPhone}
+            keyboardType="phone-pad"
+            onFocus={() => setFieldFocused(true)}
+            onBlur={() => setFieldFocused(false)}
+            style={
+              fieldFocused
+                ? {
+                    shadowColor: "#91B87C",
+                    shadowOpacity: 0.18,
+                    shadowRadius: 8,
+                    elevation: 3,
+                  }
+                : {}
+            }
+          />
+          <Label>Site Web</Label>
+          <Field
+            placeholder="https://…"
+            value={website}
+            onChangeText={setWebsite}
+            keyboardType="url"
+            onFocus={() => setFieldFocused(true)}
+            onBlur={() => setFieldFocused(false)}
+            style={
+              fieldFocused
+                ? {
+                    shadowColor: "#91B87C",
+                    shadowOpacity: 0.18,
+                    shadowRadius: 8,
+                    elevation: 3,
+                  }
+                : {}
+            }
+          />
+          <Label>Preț</Label>
+          <Row>
+            <Field
+              style={[
+                { flex: 1, marginBottom: 0, marginRight: 10 },
+                fieldFocused
+                  ? {
+                      shadowColor: "#91B87C",
+                      shadowOpacity: 0.18,
+                      shadowRadius: 8,
+                      elevation: 3,
+                    }
+                  : {},
+              ]}
+            />
+            <PickerContainer style={{ flex: 0.9, marginBottom: 0 }}>
+              <Picker
+                selectedValue={currency}
+                onValueChange={setCurrency}
+                itemStyle={{ fontSize: 16 }}
+              >
+                <Picker.Item label="Lei (RON)" value="RON" />
+                <Picker.Item label="Euro (EUR)" value="EUR" />
+                <Picker.Item label="USD" value="USD" />
+              </Picker>
+            </PickerContainer>
+          </Row>
 
-        <Text variant="label">Or pick from library</Text>
-        <Button title="Pick Images" onPress={pickImages} />
-
-        {localPhotos.length > 0 && (
-          <ScrollView horizontal style={{ marginVertical: 12 }}>
-            {localPhotos.map((a, i) => (
-              <Image
-                key={i}
-                source={{ uri: a.uri }}
-                style={{
-                  width: 80,
-                  height: 80,
-                  marginRight: 8,
-                  borderRadius: 4,
-                }}
-              />
-            ))}
-          </ScrollView>
-        )}
-
-        {loading ? (
-          <ActivityIndicator style={{ marginTop: 16 }} />
-        ) : (
-          <Button title="Add Artist" onPress={handleSubmit} />
-        )}
+          <Spacer />
+          <Label>URL Poză (opțional)</Label>
+          <Field
+            placeholder="https://…jpg"
+            value={photoUrl}
+            onChangeText={setPhotoUrl}
+            onFocus={() => setFieldFocused(true)}
+            onBlur={() => setFieldFocused(false)}
+            style={
+              fieldFocused
+                ? {
+                    shadowColor: "#91B87C",
+                    shadowOpacity: 0.18,
+                    shadowRadius: 8,
+                    elevation: 3,
+                  }
+                : {}
+            }
+          />
+          <Label>Sau deschide din galeria foto</Label>
+          <StyledButton onPress={pickImages}>
+            <ButtonText>Alege imaginile</ButtonText>
+          </StyledButton>
+          {localPhotos.length > 0 && (
+            <ScrollView horizontal>
+              {localPhotos.map((a, i) => (
+                <ImagePreview key={i} source={{ uri: a.uri }} />
+              ))}
+            </ScrollView>
+          )}
+          {loading ? (
+            <ActivityIndicator style={{ marginTop: 18 }} />
+          ) : (
+            <StyledButton onPress={handleSubmit}>
+              <ButtonText>Adaugă anunț</ButtonText>
+            </StyledButton>
+          )}
+        </Card>
       </ScrollView>
     </SafeArea>
   );
