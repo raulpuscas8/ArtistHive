@@ -1,13 +1,16 @@
 import styled from "styled-components/native";
 import { Card } from "react-native-paper";
 
-export const Icon = styled.Image`
-  width: 15px;
-  height: 15px;
-`;
-
-export const ArtistCard = styled(Card)`
+export const ArtistCard = styled(Card).attrs({
+  elevation: 6,
+})`
   background-color: ${(props) => props.theme.colors.bg.secondary};
+  shadow-color: #91b87c;
+  shadow-offset: 0px 4px;
+  shadow-opacity: 1;
+  shadow-radius: 15px;
+  border-radius: 20px;
+  elevation: 6;
 `;
 
 export const ArtistCardCover = styled(Card.Cover)`

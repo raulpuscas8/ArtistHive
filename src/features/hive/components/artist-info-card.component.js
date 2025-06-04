@@ -33,9 +33,22 @@ import {
   Section,
   SectionEnd,
   Rating,
-  Icon,
   Address,
 } from "./artist-info-card.styles.js";
+
+// Utility: Show only street + city for preview
+function getShortAddress(address = "") {
+  // Typical Google/Mapbox format: street, area, city, county, postal, country
+  const parts = address.split(",");
+  if (parts.length >= 3) {
+    // street + city
+    return `${parts[0].trim()}, ${parts[2].trim()}`;
+  } else if (parts.length >= 1) {
+    // just street
+    return parts[0].trim();
+  }
+  return address;
+}
 
 // map each category string to an Ionicon name
 const categoryIcons = {
@@ -164,29 +177,29 @@ export const ArtistInfoCard = ({ artist = {} }) => {
     setLoading(false);
   };
 
-  // Renders stars: either user's own, or average
+  // Renders interactive or static yellow stars, always 5, matching the detail screen style
   const renderStars = () => {
-    const ratingToShow = userRating || average;
-    // Show filled stars, half, and outlines as you like (for now, round to nearest half-star)
-    const rounded = Math.round(ratingToShow * 2) / 2;
-    return Array.from({ length: 5 }).map((_, i) => {
-      const starValue = i + 1;
-      // Interactive for logged-in users
-      return (
-        <TouchableOpacity
-          key={i}
-          disabled={!user}
-          onPress={() => handleRate(starValue)}
-        >
-          <SvgXml
-            xml={star}
-            width={20}
-            height={20}
-            style={{ opacity: starValue <= rounded ? 1 : 0.2 }}
+    // Show the average (not your own vote here), always 5 yellow stars
+    const rounded = Math.round(average * 2) / 2; // nearest 0.5 if you want half-stars
+    return (
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
+        {[1, 2, 3, 4, 5].map((i) => (
+          <Ionicons
+            key={i}
+            name={
+              rounded >= i
+                ? "star"
+                : rounded >= i - 0.5
+                ? "star-half-outline"
+                : "star-outline"
+            }
+            size={22}
+            color="#FFD700"
+            style={{ marginRight: 2 }}
           />
-        </TouchableOpacity>
-      );
-    });
+        ))}
+      </View>
+    );
   };
 
   //Favourite
@@ -204,8 +217,8 @@ export const ArtistInfoCard = ({ artist = {} }) => {
           }
           style={{
             position: "absolute",
-            top: 14,
-            right: 14,
+            top: 20,
+            right: 20,
             zIndex: 10,
             backgroundColor: "rgba(255,255,255,0.7)",
             borderRadius: 16,
@@ -285,7 +298,10 @@ export const ArtistInfoCard = ({ artist = {} }) => {
 
       <Info>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Text variant="label">{name}</Text>
+          <Text variant="label" style={{ fontWeight: "bold", fontSize: 17 }}>
+            {name}
+          </Text>
+
           <Spacer position="left" size="medium" />
           <Ionicons
             name={catIconName}
@@ -301,18 +317,35 @@ export const ArtistInfoCard = ({ artist = {} }) => {
             ) : (
               renderStars()
             )}
-            <Text variant="caption" style={{ marginLeft: 8 }}>
-              {average.toFixed(2)} ({votes} {votes === 1 ? "vote" : "votes"})
-            </Text>
+            {/* Price badge */}
+            {artist.price && artist.currency && (
+              <View
+                style={{
+                  backgroundColor: "#fce7d9",
+                  borderRadius: 10,
+                  paddingHorizontal: 10,
+                  paddingVertical: 2,
+                  alignSelf: "wight",
+                  marginLeft: 10,
+                }}
+              >
+                <Text
+                  variant="caption"
+                  style={{
+                    color: "#733B73",
+                    fontWeight: "bold",
+                    fontSize: 15,
+                  }}
+                >
+                  {artist.price} {artist.currency}
+                </Text>
+              </View>
+            )}
           </Rating>
-          <SectionEnd>
-            <Spacer position="left" size="large">
-              <Icon source={{ uri: icon }} />
-            </Spacer>
-          </SectionEnd>
+          <SectionEnd />
         </Section>
 
-        <Address>{address}</Address>
+        <Address style={{ fontSize: 14 }}>{getShortAddress(address)}</Address>
       </Info>
     </ArtistCard>
   );
