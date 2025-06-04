@@ -20,6 +20,7 @@ import { PaymentWebViewScreen } from "../../features/payment/screens/payment-web
 import { FavouritesScreen } from "../../features/settings/screens/favourites.screen";
 import { MapScreen } from "../../features/map/screens/map.screen";
 import { SettingsNavigator } from "./settings.navigator";
+import { DonateScreen } from "../../features/hive/screens/donate.screen";
 
 // Drawer, Stack
 const Drawer = createDrawerNavigator();
@@ -206,7 +207,7 @@ export const DrawerNavigator = () => (
     />
     <Drawer.Screen
       name="Donație"
-      component={PaymentWebViewScreen}
+      component={DonateScreen}
       options={{
         drawerIcon: ({ size }) => (
           <Avatar.Icon
@@ -218,6 +219,7 @@ export const DrawerNavigator = () => (
         ),
       }}
     />
+
     <Drawer.Screen
       name="Hartă"
       component={MapScreen}

@@ -62,7 +62,7 @@ const CategoryButton = styled(TouchableOpacity)`
   justify-content: center;
   margin-right: ${({ theme }) => theme.space[2]};
   margin-left: ${({ theme }) => theme.space[1]};
-  padding: 8px 12px;
+  padding: 8px 15px;
   border-radius: 18px;
   background-color: ${({ selected, theme }) =>
     selected ? "#f3e7f7" : "transparent"};
