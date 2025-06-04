@@ -46,13 +46,13 @@ const LoadingContainer = styled.View`
 const CategoriesBackground = styled.View`
   background-color: ${(props) => props.theme.colors.bg.secondary};
   border-radius: 24px;
-  margin: 14px 16px 0px 16px; /* Top, sides */
+  margin: 14px 16px 0px 16px;
   padding: 8px 0px;
-  /* Optional shadow for floating effect */
-  shadow-color: #000;
-  shadow-opacity: 0.04;
-  shadow-radius: 16px;
-  elevation: 2;
+  shadow-color: #91b87c;
+  shadow-opacity: 1;
+  shadow-radius: 12px;
+  shadow-offset: 0px 4px;
+  elevation: 5;
 `;
 
 // The individual category button "pills"
@@ -66,6 +66,11 @@ const CategoryButton = styled(TouchableOpacity)`
   border-radius: 18px;
   background-color: ${({ selected, theme }) =>
     selected ? "#f3e7f7" : "transparent"};
+  shadow-color: #733b73;
+  shadow-opacity: 0.16;
+  shadow-radius: 8px;
+  shadow-offset: 0px 2px;
+  elevation: 4;
 `;
 
 // ========== Component ==========
