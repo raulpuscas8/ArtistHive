@@ -38,9 +38,7 @@ export const RegisterScreen = ({ navigation }) => {
         <AccountBackground>
           <TopSection style={{ marginBottom: 12 }}>
             <Title style={{ marginTop: 0, marginBottom: 8 }}>ArtistHive</Title>
-            <Subtitle style={{ marginBottom: 6 }}>
-              Create your account!
-            </Subtitle>
+            <Subtitle style={{ marginBottom: 6 }}>Crează noul cont!</Subtitle>
           </TopSection>
           <LoginCard>
             <AuthInput
@@ -64,7 +62,7 @@ export const RegisterScreen = ({ navigation }) => {
               }}
             />
             <AuthInput
-              label="Password"
+              label="Parola"
               value={password}
               textContentType="newPassword"
               autoComplete="password-new"
@@ -85,7 +83,7 @@ export const RegisterScreen = ({ navigation }) => {
               }}
             />
             <AuthInput
-              label="Repeat Password"
+              label="Repetă parola"
               value={repeatedPassword}
               textContentType="newPassword"
               autoComplete="password-new"
@@ -132,7 +130,7 @@ export const RegisterScreen = ({ navigation }) => {
                   letterSpacing: 1,
                 }}
               >
-                Register
+                Înregistrare
               </AuthButton>
             ) : (
               <ActivityIndicator
@@ -160,7 +158,7 @@ export const RegisterScreen = ({ navigation }) => {
                 letterSpacing: 1,
               }}
             >
-              Back
+              Înapoi
             </AuthButton>
           </LoginCard>
         </AccountBackground>

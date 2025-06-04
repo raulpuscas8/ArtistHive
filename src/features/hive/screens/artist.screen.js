@@ -73,6 +73,23 @@ const CategoryButton = styled(TouchableOpacity)`
   elevation: 4;
 `;
 
+const englishToRomanian = {
+  Painting: "Pictură",
+  Music: "Muzică",
+  Sculpture: "Sculptură",
+  Photography: "Fotografie",
+  "Digital Art": "Artă digitală",
+  PrintMaking: "Gravură și print",
+  Ceramics: "Ceramică",
+  "Textile & Fiber": "Textile & Fibre",
+  "Jewelry & Wearables": "Bijuterii & Accesorii",
+  "Graphic Design & Illustration": "Design grafic & Ilustrație",
+  "Performance Art": "Artă performativă",
+  "Video & Animation": "Video & Animație",
+  "Crafts & Handmade": "Lucrate manual",
+  Other: "Altele",
+};
+
 // ========== Component ==========
 export const ArtistScreen = ({ navigation }) => {
   const theme = useTheme();
@@ -99,7 +116,11 @@ export const ArtistScreen = ({ navigation }) => {
   const displayedArtists = useMemo(() => {
     let filtered = artists;
     if (selectedCategory) {
-      filtered = filtered.filter((a) => a.category === selectedCategory);
+      filtered = filtered.filter((a) => {
+        // Check if a.category is English, map to Romanian
+        const catRo = englishToRomanian[a.category] || a.category;
+        return catRo === selectedCategory;
+      });
     }
     if (searchName) {
       filtered = filtered.filter((a) =>
@@ -172,38 +193,40 @@ export const ArtistScreen = ({ navigation }) => {
     console.log("🔥 artists payload:", artists);
   }, [artists]);
 
+  // Categorii în română:
   const categories = [
-    "Painting",
-    "Music",
-    "Sculpture",
-    "Photography",
-    "Digital Art",
-    "PrintMaking",
-    "Ceramics",
-    "Textile & Fiber",
-    "Jewelry & Wearables",
-    "Graphic Design & Illustration",
-    "Performance Art",
-    "Video & Animation",
-    "Crafts & Handmade",
-    "Other",
+    "Pictură",
+    "Muzică",
+    "Sculptură",
+    "Fotografie",
+    "Artă digitală",
+    "Gravură și print",
+    "Ceramică",
+    "Textile & Fibre",
+    "Bijuterii & Accesorii",
+    "Design grafic & Ilustrație",
+    "Artă performativă",
+    "Video & Animație",
+    "Lucrate manual",
+    "Altele",
   ];
 
+  // Iconițe asociate categoriilor:
   const categoryIcons = {
-    Painting: "color-palette-outline",
-    Music: "musical-notes-outline",
-    Sculpture: "construct-outline",
-    Photography: "camera-outline",
-    "Digital Art": "desktop-outline",
-    PrintMaking: "print-outline",
-    Ceramics: "rose-outline",
-    "Textile & Fiber": "shirt-outline",
-    "Jewelry & Wearables": "diamond-outline",
-    "Graphic Design & Illustration": "brush-outline",
-    "Performance Art": "walk-outline",
-    "Video & Animation": "videocam-outline",
-    "Crafts & Handmade": "hand-left-outline",
-    Other: "help-circle-outline",
+    Pictură: "color-palette-outline",
+    Muzică: "musical-notes-outline",
+    Sculptură: "construct-outline",
+    Fotografie: "camera-outline",
+    "Artă digitală": "desktop-outline",
+    "Gravură și print": "print-outline",
+    Ceramică: "rose-outline",
+    "Textile & Fibre": "shirt-outline",
+    "Bijuterii & Accesorii": "diamond-outline",
+    "Design grafic & Ilustrație": "brush-outline",
+    "Artă performativă": "walk-outline",
+    "Video & Animație": "videocam-outline",
+    "Lucrate manual": "hand-left-outline",
+    Altele: "help-circle-outline",
   };
 
   if (error) {
