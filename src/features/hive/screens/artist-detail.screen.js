@@ -206,7 +206,7 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
       });
 
       setIsSubmitting(false);
-      Alert.alert("Thank you for voting!");
+      Alert.alert("Mulțumim că ai votat!");
     } catch (err) {
       setIsSubmitting(false);
       Alert.alert("Error submitting vote", err.message);
@@ -216,8 +216,8 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
   // ---- Delete logic (admin only) ----
   const handleDelete = async () => {
     Alert.alert(
-      "Confirm Deletion",
-      "Are you sure you want to delete this announcement?",
+      "Confirmă ștergerea",
+      "Ești sigur că dorești să ștergi acest anunț?",
       [
         { text: "Cancel", style: "cancel" },
         {
@@ -770,6 +770,43 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
           alignItems: "flex-start",
         }}
       >
+        {/* Cumpără Button */}
+        {artist.price && artist.currency && (
+          <TouchableOpacity
+            style={{
+              backgroundColor: "#b2cba2",
+              borderRadius: 9,
+              paddingVertical: 10,
+              paddingHorizontal: 28,
+              marginBottom: 18,
+              alignSelf: "flex-start",
+              shadowColor: "#b2cba2",
+              shadowOpacity: 0.15,
+              shadowRadius: 8,
+              shadowOffset: { width: 0, height: 3 },
+              elevation: 3,
+            }}
+            onPress={() =>
+              navigation.navigate("Stripe Web Payment", {
+                amount: artist.price,
+                currency: artist.currency,
+                name: artist.name,
+              })
+            }
+            activeOpacity={0.85}
+          >
+            <Text
+              style={{
+                color: "#000000",
+                fontWeight: "bold",
+                fontSize: 17,
+                letterSpacing: 1,
+              }}
+            >
+              Cumpără
+            </Text>
+          </TouchableOpacity>
+        )}
         <Text style={SECTION_TITLE}>Evaluează acest artist:</Text>
         {renderStars()}
         {isSubmitting && <ActivityIndicator size="small" color="#FFD700" />}

@@ -74,7 +74,7 @@ export const FavouritesScreen = ({ navigation }) => {
               }}
             >
               <Ionicons name="sad-outline" size={48} color="#f99551" /> {"\n"}
-              You don't have any favourites yet.
+              Nu ai artă favorită! Alege una!
             </Text>
           </View>
         ) : (

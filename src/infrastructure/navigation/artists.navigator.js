@@ -4,6 +4,7 @@ import { TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { ArtistScreen } from "../../features/hive/screens/artist.screen";
 import { ArtistDetailScreen } from "../../features/hive/screens/artist-detail.screen";
+import { PaymentWebViewScreen } from "../../features/payment/screens/payment-webview.screen";
 import { AuthenticationContext } from "../../services/authentication/authentication.context";
 import { useTheme } from "styled-components/native";
 
@@ -11,9 +12,8 @@ const ArtistStack = createStackNavigator();
 
 export const ArtistsNavigator = () => {
   const { user } = useContext(AuthenticationContext);
-  const theme = useTheme(); // <--- Must be INSIDE your function!
+  const theme = useTheme();
 
-  // Display name logic
   const name =
     user?.displayName ||
     (user?.email &&
@@ -59,6 +59,14 @@ export const ArtistsNavigator = () => {
         name="ArtistDetail"
         component={ArtistDetailScreen}
         options={{ headerShown: false }}
+      />
+      <ArtistStack.Screen
+        name="Stripe Web Payment" // <---- This matches your navigation call!
+        component={PaymentWebViewScreen}
+        options={{
+          headerShown: true,
+          headerTitle: "Plată",
+        }}
       />
     </ArtistStack.Navigator>
   );
