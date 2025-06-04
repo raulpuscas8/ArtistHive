@@ -163,7 +163,7 @@ export const DrawerNavigator = () => (
     drawerContent={(props) => <CustomDrawerContent {...props} />}
   >
     <Drawer.Screen
-      name="Home"
+      name="Acasă"
       component={AppNavigator}
       options={{
         drawerIcon: ({ size }) => (
@@ -177,7 +177,7 @@ export const DrawerNavigator = () => (
       }}
     />
     <Drawer.Screen
-      name="Add Artist"
+      name="Adaugă un anunț"
       component={AddArtistStackNavigator}
       options={{
         drawerIcon: ({ size }) => (
@@ -191,7 +191,7 @@ export const DrawerNavigator = () => (
       }}
     />
     <Drawer.Screen
-      name="Favourites"
+      name="Favorite"
       component={FavouritesScreen}
       options={{
         drawerIcon: ({ size }) => (
@@ -205,7 +205,7 @@ export const DrawerNavigator = () => (
       }}
     />
     <Drawer.Screen
-      name="Stripe Web Payment"
+      name="Donație"
       component={PaymentWebViewScreen}
       options={{
         drawerIcon: ({ size }) => (
@@ -219,7 +219,7 @@ export const DrawerNavigator = () => (
       }}
     />
     <Drawer.Screen
-      name="Map"
+      name="Hartă"
       component={MapScreen}
       options={{
         drawerIcon: ({ size }) => (
@@ -233,7 +233,7 @@ export const DrawerNavigator = () => (
       }}
     />
     <Drawer.Screen
-      name="Settings"
+      name="Setări"
       component={SettingsNavigator}
       options={{
         drawerIcon: ({ size }) => (

@@ -89,9 +89,9 @@ export const ArtistScreen = ({ navigation }) => {
   // Helper to get all unique locations (e.g., city from address)
   const locations = useMemo(() => {
     const all = artists.map((a) => {
-      if (!a.address) return "Unknown";
+      if (!a.address) return "Fără adresă";
       const addressParts = a.address.split(",");
-      return addressParts[3]?.trim() || "Unknown";
+      return addressParts[3]?.trim() || "Fără adresă";
     });
     return [...new Set(all.filter(Boolean))];
   }, [artists]);

@@ -10,11 +10,11 @@ import {
   Image,
   Alert,
   Linking,
+  StyleSheet,
 } from "react-native";
 import { List, Divider } from "react-native-paper";
 import { ArtistInfoCard } from "../components/artist-info-card.component";
 import { SafeArea } from "../../../components/utility/safe-area.component";
-import { Button } from "react-native";
 import { Text } from "../../../components/typography/text.component";
 import { FavouritesContext } from "../../../services/favourites/favourites.context";
 import { AuthenticationContext } from "../../../services/authentication/authentication.context";
@@ -35,6 +35,24 @@ import {
 } from "firebase/firestore";
 import { getStorage, ref as storageRef, deleteObject } from "firebase/storage";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { SafeAreaView } from "react-native";
+
+const BRAND_COLOR = "#000000";
+const LIGHT_CARD = "#faf9fe";
+const CARD_RADIUS = 20;
+const SHADOW = {
+  shadowColor: "#91B87C",
+  shadowOffset: { width: 0, height: 7 },
+  shadowOpacity: 0.4,
+  shadowRadius: 15,
+  elevation: 10,
+};
+const SECTION_TITLE = {
+  color: BRAND_COLOR,
+  fontWeight: "bold",
+  fontSize: 18,
+  marginBottom: 8,
+};
 
 // Helper: returns how many days left until expiresAt, or 0 if expired
 const getDaysLeft = (expiresAt) => {
@@ -56,15 +74,17 @@ function addDays(date, days) {
 export const ArtistDetailScreen = ({ route, navigation }) => {
   const { artist } = route.params || {};
 
-  // Optional: fallback for missing artist
   if (!artist) {
     return (
       <SafeArea>
-        <View
-          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
-        >
+        <View style={styles.centered}>
           <Text variant="error">Artist details not available.</Text>
-          <Button title="Go Back" onPress={() => navigation.goBack()} />
+          <TouchableOpacity
+            style={styles.roundedBtn}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={{ color: "#fff", fontWeight: "bold" }}>Go Back</Text>
+          </TouchableOpacity>
         </View>
       </SafeArea>
     );
@@ -249,40 +269,45 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
         style={{
           flexDirection: "row",
           alignItems: "center",
-          marginTop: 12,
+          marginTop: 8,
           marginBottom: 8,
         }}
       >
         {[1, 2, 3, 4, 5].map((i) => (
-          <Ionicons
+          <TouchableOpacity
             key={i}
-            name={displayRating >= i ? "star" : "star-outline"}
-            size={32}
-            color="#FFD700"
-            style={{ marginHorizontal: 3 }}
             onPress={() => !isSubmitting && handleVote(i)}
             disabled={isSubmitting}
-          />
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name={displayRating >= i ? "star" : "star-outline"}
+              size={34}
+              color="#FFD700"
+              style={{ marginHorizontal: 3 }}
+            />
+          </TouchableOpacity>
         ))}
-        <Text variant="body" style={{ marginLeft: 10, fontWeight: "bold" }}>
+        <Text
+          style={{
+            marginLeft: 14,
+            fontWeight: "bold",
+            fontSize: 18,
+            color: BRAND_COLOR,
+          }}
+        >
           {isLoadingRating ? "..." : avgRating ? avgRating.toFixed(2) : "0.00"}
-          <Text variant="caption" style={{ fontWeight: "normal" }}>
+          <Text style={{ fontWeight: "normal", fontSize: 15 }}>
             {" "}
             ({ratingsCount || 0} votes)
           </Text>
         </Text>
-        {myRating ? (
-          <Text variant="caption" style={{ marginLeft: 8, color: "green" }}>
-            You voted {myRating}★
-          </Text>
-        ) : null}
       </View>
     );
   };
 
   // --- Show banner to extend expiry if owner and near expiry ---
   useEffect(() => {
-    // Only show if user is owner, daysLeft <= 1, and not already expired
     if (
       user?.uid &&
       artist.userId === user.uid &&
@@ -402,12 +427,12 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
 
   const handleDeleteComment = async (commentId) => {
     Alert.alert(
-      "Delete comment?",
-      "Are you sure you want to delete this comment?",
+      "Stergi comentariul?",
+      "Sunteți sigur că doriți să ștergeți acest comentariu?",
       [
-        { text: "Cancel", style: "cancel" },
+        { text: "Anulează", style: "cancel" },
         {
-          text: "Delete",
+          text: "Șterge",
           style: "destructive",
           onPress: async () => {
             try {
@@ -424,15 +449,6 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
     );
   };
 
-  // --- Format date/time for comments ---
-  const formatTime = (firestoreDate) => {
-    if (!firestoreDate?.toDate) return "";
-    const date = firestoreDate.toDate();
-    return `${date.toLocaleDateString()} ${date
-      .toLocaleTimeString()
-      .slice(0, 5)}`;
-  };
-
   // --- Helper to render avatar (photoURL or initial in circle) ---
   const renderAvatar = (userAvatar, userName) => {
     if (userAvatar) {
@@ -440,11 +456,13 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
         <Image
           source={{ uri: userAvatar }}
           style={{
-            width: 36,
-            height: 36,
-            borderRadius: 18,
+            width: 42,
+            height: 42,
+            borderRadius: 21,
+            borderWidth: 2,
+            borderColor: "#fff",
             backgroundColor: "#eee",
-            marginRight: 8,
+            marginRight: 10,
           }}
         />
       );
@@ -458,26 +476,25 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
     return (
       <View
         style={{
-          width: 36,
-          height: 36,
-          borderRadius: 18,
+          width: 42,
+          height: 42,
+          borderRadius: 21,
+          borderWidth: 2,
+          borderColor: "#fff",
           backgroundColor: bgColor,
           alignItems: "center",
           justifyContent: "center",
-          marginRight: 8,
+          marginRight: 10,
         }}
       >
-        <Text
-          variant="label"
-          style={{ color: "#fff", fontWeight: "bold", fontSize: 18 }}
-        >
+        <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 22 }}>
           {initial}
         </Text>
       </View>
     );
   };
 
-  // --- UI for comments section ---
+  // --- UI for comments section (card) ---
   const renderComment = ({ item }) => {
     const isMyComment = user?.uid === item.userId;
 
@@ -487,15 +504,17 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
         style={{
           flexDirection: "row",
           alignItems: "flex-start",
-          paddingVertical: 6,
-          borderBottomWidth: 0.5,
-          borderColor: "#e0e0e0",
-          marginBottom: 2,
+          backgroundColor: LIGHT_CARD,
+          borderRadius: 14,
+          marginHorizontal: 16,
+          marginBottom: 8,
+          padding: 12,
+          ...SHADOW,
         }}
       >
         {renderAvatar(item.userAvatar, item.userName)}
         <View style={{ flex: 1 }}>
-          <Text variant="caption" style={{ fontWeight: "bold" }}>
+          <Text style={{ fontWeight: "bold", color: BRAND_COLOR }}>
             {item.userName}
           </Text>
           {editingCommentId === item.id ? (
@@ -510,6 +529,7 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
                   borderRadius: 8,
                   paddingHorizontal: 8,
                   marginRight: 4,
+                  backgroundColor: "#fff",
                 }}
                 editable={!isEditingComment}
               />
@@ -521,27 +541,22 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
               </TouchableOpacity>
             </View>
           ) : (
-            <>
-              <Text variant="body">{item.text}</Text>
-              <Text
-                variant="caption"
-                style={{ color: "#757575", fontSize: 10 }}
-              >
-                {formatTime(item.timestamp)}
-              </Text>
-            </>
+            <Text style={{ fontSize: 15, marginTop: 2 }}>{item.text}</Text>
           )}
         </View>
         {isMyComment && editingCommentId !== item.id && (
-          <View style={{ flexDirection: "row", marginLeft: 4 }}>
+          <View style={{ flexDirection: "row", marginLeft: 8 }}>
             <TouchableOpacity
               onPress={() => handleEditComment(item)}
-              style={{ marginRight: 4 }}
+              style={{ marginRight: 4, padding: 2 }}
             >
-              <MaterialIcons name="edit" size={20} color="#1565C0" />
+              <MaterialIcons name="edit" size={22} color="#1565C0" />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => handleDeleteComment(item.id)}>
-              <MaterialIcons name="delete" size={20} color="#B71C1C" />
+            <TouchableOpacity
+              onPress={() => handleDeleteComment(item.id)}
+              style={{ padding: 2 }}
+            >
+              <MaterialIcons name="delete" size={22} color="#B71C1C" />
             </TouchableOpacity>
           </View>
         )}
@@ -549,6 +564,7 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
     );
   };
 
+  // --- Expiry
   // --- In-app banner for extending expiry (if owner, about to expire) ---
   const ExtendBanner = () =>
     showExtendBanner ? (
@@ -557,18 +573,18 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
           backgroundColor: "#FFF8E1",
           borderColor: "#FFD54F",
           borderWidth: 1,
-          borderRadius: 10,
-          marginHorizontal: 20,
-          marginVertical: 6,
-          padding: 16,
+          borderRadius: 14,
+          marginHorizontal: 24,
+          marginVertical: 12,
+          padding: 18,
           alignItems: "center",
           justifyContent: "center",
           flexDirection: "row",
-          gap: 8,
+          ...SHADOW,
         }}
       >
         <Ionicons name="alert-circle" size={28} color="#FFA000" />
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, marginLeft: 10 }}>
           <Text
             style={{
               color: "#FFA000",
@@ -583,14 +599,35 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
             Do you want to extend by 30 days?
           </Text>
         </View>
-        <Button title="Extend" color="#FFA000" onPress={handleExtendExpiry} />
+        <TouchableOpacity
+          style={{
+            backgroundColor: "#FFA000",
+            borderRadius: 20,
+            paddingHorizontal: 18,
+            paddingVertical: 7,
+            marginLeft: 10,
+          }}
+          onPress={handleExtendExpiry}
+        >
+          <Text style={{ color: "#fff", fontWeight: "bold" }}>Extend</Text>
+        </TouchableOpacity>
       </View>
     ) : null;
 
   // --- All header content (everything above comments) ---
   const ListHeaderComponent = (
     <>
-      <View style={{ position: "relative" }}>
+      {/* 1. ARTIST CARD */}
+      <View
+        style={{
+          marginTop: 16,
+          marginHorizontal: 12,
+          backgroundColor: "#fff",
+          borderRadius: CARD_RADIUS,
+          ...SHADOW,
+          paddingBottom: 8,
+        }}
+      >
         <ArtistInfoCard artist={artist} />
         <TouchableOpacity
           onPress={() =>
@@ -600,82 +637,147 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
           }
           style={{
             position: "absolute",
-            top: 16,
-            right: 16,
-            backgroundColor: "rgba(255,255,255,0.7)",
-            borderRadius: 20,
-            padding: 6,
-            zIndex: 10,
+            top: 18,
+            right: 18,
+            backgroundColor: "#fff",
+            borderRadius: 50,
+            padding: 8,
+            ...SHADOW,
           }}
+          activeOpacity={0.7}
         >
           <Ionicons
             name={favourites.includes(artist.id) ? "heart" : "heart-outline"}
-            size={28}
-            color={favourites.includes(artist.id) ? "red" : "grey"}
+            size={30}
+            color={favourites.includes(artist.id) ? "#FF2667" : "#c2c2c2"}
           />
         </TouchableOpacity>
       </View>
 
-      <ExtendBanner />
-      {/* Expiry status */}
-      <View style={{ paddingHorizontal: 20, marginTop: 10, marginBottom: 2 }}>
+      {/* 2. DESCRIPTION - always visible */}
+      <View
+        style={{
+          marginTop: 18,
+          marginHorizontal: 16,
+          backgroundColor: LIGHT_CARD,
+          borderRadius: 16,
+          ...SHADOW,
+          padding: 14,
+          marginBottom: 2,
+        }}
+      >
+        <Text style={SECTION_TITLE}>Descriere:</Text>
+        <Text style={{ fontSize: 15, color: "#222", lineHeight: 20 }}>
+          {artist.description || "No description provided."}
+        </Text>
+      </View>
+
+      {/* 3. CONTACT (accordion) */}
+      <View
+        style={{
+          marginTop: 10,
+          marginHorizontal: 16,
+          marginBottom: 2,
+          borderRadius: 16,
+          overflow: "hidden",
+          ...SHADOW,
+          backgroundColor: "#fff",
+        }}
+      >
+        <List.Accordion
+          title="Contact"
+          left={(props) => (
+            <List.Icon {...props} icon="phone-outline" color={BRAND_COLOR} />
+          )}
+          expanded={contactExpanded}
+          onPress={() => setContactExpanded(!contactExpanded)}
+          style={{
+            backgroundColor: "#a3bf93",
+            borderRadius: 16,
+          }}
+          titleStyle={{ color: BRAND_COLOR, fontWeight: "bold", fontSize: 16 }}
+        >
+          {artist.email ? (
+            <List.Item
+              title={artist.email}
+              description="Email"
+              left={(props) => <List.Icon {...props} icon="email-outline" />}
+              onPress={() => handlePress("email", artist.email)}
+            />
+          ) : null}
+          {artist.phone ? (
+            <List.Item
+              title={artist.phone}
+              description="Telefon"
+              left={(props) => <List.Icon {...props} icon="phone-outline" />}
+              onPress={() => handlePress("phone", artist.phone)}
+            />
+          ) : null}
+          {artist.website ? (
+            <List.Item
+              title={artist.website}
+              description="Website"
+              left={(props) => <List.Icon {...props} icon="web" />}
+              onPress={() => handlePress("website", artist.website)}
+            />
+          ) : null}
+          {!artist.email && !artist.phone && !artist.website && (
+            <List.Item title="No contact info provided." />
+          )}
+        </List.Accordion>
+      </View>
+
+      {/* 4. EXPIRY */}
+      <View style={{ paddingHorizontal: 26, marginTop: 18, marginBottom: 2 }}>
         {daysLeft === 0 ? (
           <Text
-            variant="label"
             style={{
-              color: "red",
+              color: "#e03c3c",
               fontWeight: "bold",
               backgroundColor: "#ffd6d6",
               borderRadius: 8,
-              paddingHorizontal: 10,
-              paddingVertical: 2,
+              paddingHorizontal: 12,
+              paddingVertical: 3,
               alignSelf: "flex-start",
+              ...SHADOW,
             }}
           >
             Expirat
           </Text>
         ) : daysLeft ? (
           <Text
-            variant="label"
             style={{
               color: "#B97309",
               backgroundColor: "#fff3cd",
               borderRadius: 8,
-              paddingHorizontal: 10,
-              paddingVertical: 2,
+              paddingHorizontal: 12,
+              paddingVertical: 3,
               alignSelf: "flex-start",
               fontWeight: "bold",
+              ...SHADOW,
             }}
           >
-            Expiră în {daysLeft} {daysLeft === 1 ? "zi" : "zile"}
+            Anunțul expiră în {daysLeft} {daysLeft === 1 ? "zi" : "zile"}
           </Text>
         ) : null}
       </View>
-      {/* STAR VOTING */}
+
+      {/* 5. RATING */}
       <View
         style={{
-          paddingHorizontal: 20,
-          paddingTop: 10,
+          paddingHorizontal: 26,
+          paddingTop: 18,
           alignItems: "flex-start",
         }}
       >
-        <Text
-          variant="label"
-          style={{ fontWeight: "bold", fontSize: 16, marginBottom: 4 }}
-        >
-          Rate this artist:
-        </Text>
+        <Text style={SECTION_TITLE}>Evaluează acest artist:</Text>
         {renderStars()}
         {isSubmitting && <ActivityIndicator size="small" color="#FFD700" />}
       </View>
-      {/* COMMENTS TITLE & INPUT */}
-      <View style={{ paddingHorizontal: 20, marginTop: 16 }}>
-        <Text
-          variant="label"
-          style={{ fontWeight: "bold", fontSize: 16, marginBottom: 8 }}
-        >
-          Comments
-        </Text>
+
+      {/* 6. COMMENTS TITLE & INPUT */}
+      <View style={{ paddingHorizontal: 26, marginTop: 18, marginBottom: 4 }}>
+        <Text style={SECTION_TITLE}>Comentarii:</Text>
         <View
           style={{
             flexDirection: "row",
@@ -688,113 +790,74 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
             ref={commentInputRef}
             style={{
               borderWidth: 1,
-              borderColor: "#d0d0d0",
-              borderRadius: 8,
+              borderColor: "#e0d6ee",
+              borderRadius: 12,
               flex: 1,
-              paddingHorizontal: 12,
-              paddingVertical: 6,
+              paddingHorizontal: 14,
+              paddingVertical: 8,
               marginRight: 8,
-              backgroundColor: "#fafafa",
+              backgroundColor: "#f9f8fd",
             }}
-            placeholder="Add a comment…"
+            placeholder="Scrie un comentariu..."
             value={commentInput}
             onChangeText={setCommentInput}
             editable={!isPostingComment}
             returnKeyType="send"
             onSubmitEditing={handleAddComment}
           />
-          <Button
-            title={isPostingComment ? "Posting..." : "Send"}
+          <TouchableOpacity
+            style={{
+              backgroundColor: "#a3bf93",
+              borderRadius: 12,
+              paddingHorizontal: 22,
+              paddingVertical: 8,
+              opacity: isPostingComment ? 0.7 : 1,
+            }}
             onPress={handleAddComment}
             disabled={isPostingComment}
-            color="#007AFF"
-          />
+            activeOpacity={0.7}
+          >
+            <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>
+              {isPostingComment ? "..." : "Trimite"}
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
+
+      {/* 7. EXTEND BANNER */}
+      <ExtendBanner />
     </>
   );
-  // --- All footer content (accordions, admin button) ---
+
+  // --- All footer content (only admin delete button now) ---
   const ListFooterComponent = (
-    <View style={{ paddingBottom: 24 }}>
-      <List.Section>
-        {/* Description */}
-        <List.Accordion
-          title="Description"
-          left={(props) => <List.Icon {...props} icon="information-outline" />}
-          expanded={descExpanded}
-          onPress={() => setDescExpanded(!descExpanded)}
-        >
-          <List.Item title={artist.description || "No description provided."} />
-        </List.Accordion>
-        <Divider />
-
-        {/* Contact */}
-        <List.Accordion
-          title="Contact"
-          left={(props) => <List.Icon {...props} icon="phone-outline" />}
-          expanded={contactExpanded}
-          onPress={() => setContactExpanded(!contactExpanded)}
-        >
-          {artist.email ? (
-            <List.Item
-              title={artist.email}
-              description="Email"
-              left={(props) => <List.Icon {...props} icon="email-outline" />}
-              onPress={() => handlePress("email", artist.email)}
-            />
-          ) : null}
-
-          {artist.phone ? (
-            <List.Item
-              title={artist.phone}
-              description="Phone"
-              left={(props) => <List.Icon {...props} icon="phone-outline" />}
-              onPress={() => handlePress("phone", artist.phone)}
-            />
-          ) : null}
-
-          {artist.website ? (
-            <List.Item
-              title={artist.website}
-              description="Website"
-              left={(props) => <List.Icon {...props} icon="web" />}
-              onPress={() => handlePress("website", artist.website)}
-            />
-          ) : null}
-
-          {!artist.email && !artist.phone && !artist.website && (
-            <List.Item title="No contact info provided." />
-          )}
-        </List.Accordion>
-        <Divider />
-
-        {/* Pricing */}
-        <List.Accordion
-          title="Pricing"
-          left={(props) => <List.Icon {...props} icon="cash" />}
-          expanded={pricingExpanded}
-          onPress={() => setPricingExpanded(!pricingExpanded)}
-        >
-          <List.Item title={getPriceLabel()} />
-          {artist.price && artist.currency && (
-            <Button title="Cumpără" onPress={handleBuy} color="#8BC34A" />
-          )}
-        </List.Accordion>
-      </List.Section>
-      {/* Delete button for admin */}
+    <>
       {userRole === "admin" && (
-        <Button
-          title="Delete Announcement"
+        <TouchableOpacity
           onPress={handleDelete}
-          color="#f44336"
-        />
+          style={{
+            marginHorizontal: 16,
+            marginBottom: 24,
+            marginTop: 8,
+            backgroundColor: "#f44336",
+            paddingVertical: 14,
+            borderRadius: 16,
+            alignItems: "center",
+            ...SHADOW,
+          }}
+          activeOpacity={0.8}
+        >
+          <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 17 }}>
+            Delete Announcement
+          </Text>
+        </TouchableOpacity>
       )}
-    </View>
+    </>
   );
 
   // --- Actually render FlatList as root, not ScrollView!
   return (
-    <SafeArea>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#f0f5ed" }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={{ flex: 1 }}
@@ -806,16 +869,20 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
           keyExtractor={(item) => item.id}
           ListHeaderComponent={ListHeaderComponent}
           ListFooterComponent={ListFooterComponent}
-          contentContainerStyle={{ paddingBottom: 40, backgroundColor: "#fff" }}
+          contentContainerStyle={{
+            paddingBottom: 44,
+            backgroundColor: "#fcfcfa",
+          }}
           keyboardShouldPersistTaps="handled"
           ListEmptyComponent={
             <Text
-              variant="caption"
               style={{
                 color: "#888",
-                paddingLeft: 24,
+                paddingLeft: 32,
                 marginBottom: 12,
                 marginTop: 4,
+                fontStyle: "italic",
+                fontSize: 15,
               }}
             >
               No comments yet.
@@ -823,7 +890,7 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
           }
         />
       </KeyboardAvoidingView>
-    </SafeArea>
+    </SafeAreaView>
   );
 };
 
@@ -841,3 +908,21 @@ function handlePress(type, value) {
     Alert.alert("Can't handle this URL:", err?.message || url)
   );
 }
+
+// --- Extra styling for fallback screen ---
+const styles = StyleSheet.create({
+  centered: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#91B87C",
+  },
+  roundedBtn: {
+    marginTop: 18,
+    backgroundColor: BRAND_COLOR,
+    paddingHorizontal: 32,
+    paddingVertical: 14,
+    borderRadius: 22,
+    ...SHADOW,
+  },
+});
