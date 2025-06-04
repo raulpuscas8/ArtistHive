@@ -31,7 +31,7 @@ export const AccountScreen = ({ navigation }) => {
           />
         </AnimationWrapper>
         <Title style={{ marginTop: 30 }}>ArtistHive</Title>
-        <Subtitle>Your art, your hive!</Subtitle>
+        <Subtitle>Arta ta, stupul tău!</Subtitle>
       </TopSection>
       <BottomCard>
         {isAuthenticated ? (
@@ -70,7 +70,7 @@ export const AccountScreen = ({ navigation }) => {
                 letterSpacing: 1,
               }}
             >
-              Login
+              Autentificare
             </AuthButton>
             <AuthButton
               icon="email"
@@ -89,7 +89,7 @@ export const AccountScreen = ({ navigation }) => {
                 letterSpacing: 1,
               }}
             >
-              Register
+              Înregistrare
             </AuthButton>
           </>
         )}

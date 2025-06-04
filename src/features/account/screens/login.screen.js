@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   AccountBackground,
   TopSection,
@@ -12,17 +12,47 @@ import {
 import { Text } from "../../../components/typography/text.component";
 import { Spacer } from "../../../components/spacer/spacer.component";
 import { AuthenticationContext } from "../../../services/authentication/authentication.context";
+import { signInWithCredential, GoogleAuthProvider } from "firebase/auth";
+import { auth } from "../../../utils/firebase.config";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
 } from "react-native";
+import * as Google from "expo-auth-session/providers/google";
+import * as WebBrowser from "expo-web-browser";
+
+WebBrowser.maybeCompleteAuthSession();
 
 export const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { onLogin, error, isLoading } = useContext(AuthenticationContext);
+
+  // Google Auth Session setup
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    clientId: process.env.GOOGLE_WEB_CLIENT_ID, // or just paste the value if testing
+  });
+
+  useEffect(() => {
+    if (response?.type === "success") {
+      const { id_token } = response.params;
+      const credential = GoogleAuthProvider.credential(id_token);
+
+      signInWithCredential(auth, credential)
+        .then((userCredential) => {
+          console.log(
+            "Firebase Google login success:",
+            userCredential.user.email
+          );
+          // Optional: navigate, show toast, etc.
+        })
+        .catch((err) => {
+          console.log("Firebase Google login error:", err);
+        });
+    }
+  }, [response]);
 
   return (
     <KeyboardAvoidingView
@@ -37,9 +67,7 @@ export const LoginScreen = ({ navigation }) => {
         <AccountBackground>
           <TopSection style={{ marginBottom: 12 }}>
             <Title style={{ marginTop: 0, marginBottom: 8 }}>ArtistHive</Title>
-            <Subtitle style={{ marginBottom: 6 }}>
-              Welcome back! Login below.
-            </Subtitle>
+            <Subtitle style={{ marginBottom: 6 }}>Bine ai revenit!</Subtitle>
           </TopSection>
           <LoginCard>
             <AuthInput
@@ -63,7 +91,7 @@ export const LoginScreen = ({ navigation }) => {
               }}
             />
             <AuthInput
-              label="Password"
+              label="Parolă"
               value={password}
               textContentType="password"
               secureTextEntry
@@ -109,7 +137,7 @@ export const LoginScreen = ({ navigation }) => {
                   letterSpacing: 1,
                 }}
               >
-                Login
+                Conectare
               </AuthButton>
             ) : (
               <ActivityIndicator
@@ -118,6 +146,30 @@ export const LoginScreen = ({ navigation }) => {
                 size="large"
               />
             )}
+
+            {/* Google Login Button */}
+            <AuthButton
+              icon="google"
+              mode="outlined"
+              onPress={() => promptAsync()}
+              style={{
+                borderRadius: 16,
+                borderWidth: 2,
+                borderColor: "#db4437",
+                width: "100%",
+                minHeight: 50,
+                marginBottom: 14,
+              }}
+              labelStyle={{
+                fontWeight: "bold",
+                fontSize: 18,
+                color: "#db4437",
+                letterSpacing: 1,
+              }}
+              disabled={!request}
+            >
+              Conectare cu Google
+            </AuthButton>
 
             <AuthButton
               mode="outlined"
@@ -137,7 +189,7 @@ export const LoginScreen = ({ navigation }) => {
                 letterSpacing: 1,
               }}
             >
-              Back
+              Înapoi
             </AuthButton>
           </LoginCard>
         </AccountBackground>

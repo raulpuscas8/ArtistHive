@@ -52,20 +52,37 @@ function getShortAddress(address = "") {
 
 // map each category string to an Ionicon name
 const categoryIcons = {
-  Painting: "color-palette-outline",
-  Music: "musical-notes-outline",
-  Sculpture: "construct-outline",
-  Photography: "camera-outline",
-  "Digital Art": "desktop-outline",
-  PrintMaking: "print-outline",
-  Ceramics: "rose-outline",
-  "Textile & Fiber": "shirt-outline",
-  "Jewelry & Wearables": "diamond-outline",
-  "Graphic Design & Illustration": "brush-outline",
-  "Performance Art": "walk-outline",
-  "Video & Animation": "videocam-outline",
-  "Crafts & Handmade": "hand-left-outline",
-  Other: "help-circle-outline",
+  Pictură: "color-palette-outline",
+  Muzică: "musical-notes-outline",
+  Sculptură: "construct-outline",
+  Fotografie: "camera-outline",
+  "Artă digitală": "desktop-outline",
+  "Gravură și print": "print-outline",
+  Ceramică: "rose-outline",
+  "Textile & Fibre": "shirt-outline",
+  "Bijuterii & Accesorii": "diamond-outline",
+  "Design grafic & Ilustrație": "brush-outline",
+  "Artă performativă": "walk-outline",
+  "Video & Animație": "videocam-outline",
+  "Lucrate manual": "hand-left-outline",
+  Altele: "help-circle-outline",
+};
+
+const englishToRomanian = {
+  Painting: "Pictură",
+  Music: "Muzică",
+  Sculpture: "Sculptură",
+  Photography: "Fotografie",
+  "Digital Art": "Artă digitală",
+  PrintMaking: "Gravură și print",
+  Ceramics: "Ceramică",
+  "Textile & Fiber": "Textile & Fibre",
+  "Jewelry & Wearables": "Bijuterii & Accesorii",
+  "Graphic Design & Illustration": "Design grafic & Ilustrație",
+  "Performance Art": "Artă performativă",
+  "Video & Animation": "Video & Animație",
+  "Crafts & Handmade": "Lucrate manual",
+  Other: "Altele",
 };
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
@@ -104,7 +121,8 @@ export const ArtistInfoCard = ({ artist = {} }) => {
     ? validPhotos
     : ["https://via.placeholder.com/400"];
 
-  const catIconName = categoryIcons[category] || categoryIcons.Other;
+  const categoryRo = englishToRomanian[category] || category;
+  const catIconName = categoryIcons[categoryRo] || categoryIcons.Altele;
 
   // --- New for ratings ---
   const [userRating, setUserRating] = useState(null); // user's own rating

@@ -160,20 +160,20 @@ export const AddArtistScreen = () => {
   }, [route.params]);
 
   const categories = [
-    "Painting",
-    "Music",
-    "Sculpture",
-    "Photography",
-    "Digital Art",
-    "PrintMaking",
-    "Ceramics",
-    "Textile & Fiber",
-    "Jewelry & Wearables",
-    "Graphic Design & Illustration",
-    "Performance Art",
-    "Video & Animation",
-    "Crafts & Handmade",
-    "Other",
+    "Pictură",
+    "Muzică",
+    "Sculptură",
+    "Fotografie",
+    "Artă digitală",
+    "Gravură și print",
+    "Ceramică",
+    "Textile & Fibre",
+    "Bijuterii & Accesorii",
+    "Design grafic & Ilustrație",
+    "Artă performativă",
+    "Video & Animație",
+    "Lucrate manual",
+    "Altele",
   ];
 
   const pickImages = async () => {

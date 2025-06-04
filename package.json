@@ -25,11 +25,14 @@
     "dotenv": "^16.5.0",
     "expo": "^53.0.0",
     "expo-app-loading": "^1.1.2",
+    "expo-auth-session": "~6.1.5",
     "expo-camera": "~16.1.6",
     "expo-font": "~13.3.1",
     "expo-image-manipulator": "~13.1.7",
     "expo-image-picker": "~16.1.4",
+    "expo-linear-gradient": "~14.1.4",
     "expo-location": "^18.1.5",
+    "expo-random": "^14.0.1",
     "expo-status-bar": "~2.2.3",
     "express": "^5.1.0",
     "firebase": "^11.5.0",
@@ -53,8 +56,7 @@
     "semver": "^7.7.1",
     "stripe": "^18.2.0",
     "styled-components": "^6.1.15",
-    "xml2js": "^0.6.2",
-    "expo-linear-gradient": "~14.1.4"
+    "xml2js": "^0.6.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

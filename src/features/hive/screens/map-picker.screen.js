@@ -13,6 +13,7 @@ import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
 import { LocationContext } from "../../../services/location/location.context";
 import { Search } from "../../map/components/search.component";
+import { Ionicons } from "@expo/vector-icons";
 
 export const MapPickerScreen = ({ navigation }) => {
   const { location, search } = useContext(LocationContext);
@@ -106,7 +107,29 @@ export const MapPickerScreen = ({ navigation }) => {
 
   return (
     <View style={{ flex: 1 }}>
-      {/* Search bar overlay */}
+      {/* Floating menu button */}
+      <TouchableOpacity
+        onPress={() => navigation.openDrawer()}
+        style={{
+          position: "absolute",
+          top: 52,
+          left: 28,
+          backgroundColor: "#fff5e6",
+          borderRadius: 16,
+          padding: 8,
+          zIndex: 20,
+          shadowColor: "#f99551",
+          shadowOpacity: 0.14,
+          shadowRadius: 10,
+          shadowOffset: { width: 0, height: 4 },
+          elevation: 4,
+        }}
+        activeOpacity={0.7}
+      >
+        <Ionicons name="menu" size={32} color="#F55654" />
+      </TouchableOpacity>
+
+      {/* The rest of your content: */}
       <View style={styles.searchOverlay}>
         <Search />
       </View>
@@ -129,7 +152,7 @@ const styles = StyleSheet.create({
   centered: { flex: 1, justifyContent: "center", alignItems: "center" },
   searchOverlay: {
     position: "absolute",
-    top: 38,
+    top: 90,
     left: 10,
     right: 10,
     zIndex: 10,
