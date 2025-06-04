@@ -50,7 +50,7 @@ export const AppNavigator = () => (
               fontSize: 12,
             }}
           >
-            Artists
+            Artiști
           </Text>
         ),
       }}
@@ -67,7 +67,7 @@ export const AppNavigator = () => (
               fontSize: 12,
             }}
           >
-            Map
+            Hartă
           </Text>
         ),
       }}
@@ -84,7 +84,7 @@ export const AppNavigator = () => (
               fontSize: 12,
             }}
           >
-            Settings
+            Setări
           </Text>
         ),
       }}
