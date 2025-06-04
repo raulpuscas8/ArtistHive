@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useCallback } from "react";
 import { List, Avatar, Divider } from "react-native-paper";
 import styled from "styled-components/native";
 import { TouchableOpacity, ScrollView } from "react-native";
@@ -9,6 +9,8 @@ import { SafeArea } from "../../../components/utility/safe-area.component";
 import { AuthenticationContext } from "../../../services/authentication/authentication.context";
 import { Text } from "../../../components/typography/text.component";
 import { Spacer } from "../../../components/spacer/spacer.component";
+import { EditAccountScreen } from "./edit-account.screen";
+import { Button } from "react-native-paper";
 
 // Colors from your palette
 const ACCENT = "#733b73";
@@ -16,7 +18,7 @@ const ACCENT2 = "#f55654";
 
 const PageContainer = styled.View`
   flex: 1;
-  background-color: #427c80;
+  background-color: "#9e3736";
 `;
 
 const ProfileCard = styled.View`
@@ -72,6 +74,13 @@ const SectionHeaderText = styled(Text)`
   margin-left: 7px;
 `;
 
+const EditButtonContainer = styled.View`
+  margin: 0 16px 12px 16px;
+  border-radius: 22px;
+  overflow: hidden;
+  background-color: #fff;
+`;
+
 export const SettingsScreen = ({ navigation }) => {
   const { onLogout, user } = useContext(AuthenticationContext);
   const [photo, setPhoto] = useState(null);
@@ -89,12 +98,14 @@ export const SettingsScreen = ({ navigation }) => {
     setPhoto(photoUri);
   };
 
-  useFocusEffect(() => {
-    getProfilePicture(user);
-  }, [user]);
+  useFocusEffect(
+    useCallback(() => {
+      getProfilePicture(user);
+    }, [user])
+  );
 
   return (
-    <SafeArea style={{ flex: 1, backgroundColor: "#427c80" }}>
+    <SafeArea style={{ flex: 1, backgroundColor: "#9e3736" }}>
       <ScrollView>
         <ProfileCard>
           <TouchableOpacity onPress={() => navigation.navigate("Camera")}>
@@ -125,19 +136,45 @@ export const SettingsScreen = ({ navigation }) => {
           </Spacer>
           {/* Email */}
           <Spacer position="top" size="small">
-            <Text variant="label" style={{ color: "#427c80", fontSize: 16 }}>
+            <Text variant="label" style={{ color: "#9e3736", fontSize: 16 }}>
               {user.email}
             </Text>
           </Spacer>
         </ProfileCard>
+        <EditButtonContainer>
+          <Button
+            mode="outlined"
+            style={{
+              borderColor: "#733b73",
+              borderWidth: 2,
+              borderRadius: 22,
+              backgroundColor: "#fff",
+              minHeight: 58,
+              justifyContent: "center",
+              alignItems: "center",
+              elevation: 2,
+              shadowColor: "#000",
+              shadowOpacity: 0.08,
+              shadowRadius: 10,
+            }}
+            labelStyle={{
+              color: "#733b73",
+              fontWeight: "bold",
+              fontSize: 18,
+            }}
+            onPress={() => navigation.navigate("EditAccount")}
+          >
+            Modifică datele contului
+          </Button>
+        </EditButtonContainer>
         <SectionHeaderContainer>
           <List.Icon icon="account" color={ACCENT2} style={{ margin: 0 }} />
           <SectionHeaderText>Contul tău</SectionHeaderText>
-        </SectionHeaderContainer>{" "}
+        </SectionHeaderContainer>
+
         <SettingsCard>
           <List.Item
             title="Favorite"
-            description="Vezi ce ai salvat"
             left={(props) => (
               <List.Icon {...props} color={ACCENT2} icon="heart" />
             )}
@@ -159,7 +196,6 @@ export const SettingsScreen = ({ navigation }) => {
         <SettingsCard>
           <List.Item
             title="Despre ArtistHive"
-            description="Ce e, cine a făcut-o"
             left={(props) => (
               <List.Icon {...props} color={ACCENT} icon="information" />
             )}
@@ -168,7 +204,6 @@ export const SettingsScreen = ({ navigation }) => {
           <Divider />
           <List.Item
             title="Copyright"
-            description="Legal & Credits"
             left={(props) => (
               <List.Icon {...props} color="#333" icon="copyright" />
             )}

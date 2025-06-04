@@ -5,6 +5,7 @@ import { CameraScreen } from "../../features/settings/screens/camera.screen";
 // Add the imports below
 import { AboutScreen } from "../../features/settings/screens/about.screen";
 import { CopyrightScreen } from "../../features/settings/screens/copyright.screen";
+import { EditAccountScreen } from "../../features/settings/screens/edit-account.screen";
 
 import {
   createStackNavigator,
@@ -41,6 +42,14 @@ export const SettingsNavigator = ({ route, navigation }) => {
         name="Copyright"
         component={CopyrightScreen}
         options={{ headerShown: false }}
+      />
+      {/* Your new screen below */}
+      <SettingsStack.Screen
+        name="EditAccount"
+        component={EditAccountScreen}
+        options={{
+          headerShown: false,
+        }}
       />
     </SettingsStack.Navigator>
   );
