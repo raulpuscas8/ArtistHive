@@ -7,6 +7,8 @@ import { ArtistDetailScreen } from "../../features/hive/screens/artist-detail.sc
 import { PaymentWebViewScreen } from "../../features/payment/screens/payment-webview.screen";
 import { AuthenticationContext } from "../../services/authentication/authentication.context";
 import { useTheme } from "styled-components/native";
+import { EditArtistScreen } from "../../features/hive/screens/edit-artist.screen";
+import { MapPickerScreen } from "../../features/hive/screens/map-picker.screen";
 
 const ArtistStack = createStackNavigator();
 
@@ -49,7 +51,7 @@ export const ArtistsNavigator = () => {
       })}
     >
       <ArtistStack.Screen
-        name="ArtistsListt"
+        name="ArtistsList"
         component={ArtistScreen}
         options={{
           headerTitle: `Salut, ${name}!`,
@@ -61,11 +63,26 @@ export const ArtistsNavigator = () => {
         options={{ headerShown: false }}
       />
       <ArtistStack.Screen
-        name="Stripe Web Payment" // <---- This matches your navigation call!
+        name="Stripe Web Payment"
         component={PaymentWebViewScreen}
         options={{
           headerShown: true,
           headerTitle: "Plată",
+        }}
+      />
+      <ArtistStack.Screen
+        name="EditArtist"
+        component={EditArtistScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <ArtistStack.Screen
+        name="MapPicker"
+        component={MapPickerScreen}
+        options={{
+          headerShown: false,
+          tabBarStyle: { display: "none" },
         }}
       />
     </ArtistStack.Navigator>

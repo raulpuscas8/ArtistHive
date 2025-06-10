@@ -1,29 +1,21 @@
-// src/features/hive/screens/add-artist.screen.js
-
 import React, { useState, useEffect, useContext } from "react";
 import {
   ScrollView,
   TextInput,
-  Button,
-  View,
   Alert,
-  Image,
   ActivityIndicator,
   TouchableOpacity,
+  Image,
+  View,
+  StyleSheet,
+  Platform,
 } from "react-native";
 import styled from "styled-components/native";
 import { Picker } from "@react-native-picker/picker";
 import * as ImagePicker from "expo-image-picker";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import {
-  GeoPoint,
-  collection,
-  addDoc,
-  serverTimestamp,
-  Timestamp,
-} from "firebase/firestore";
+import { GeoPoint, doc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { LinearGradient } from "expo-linear-gradient";
-
 import { SafeArea } from "../../../components/utility/safe-area.component";
 import { Text } from "../../../components/typography/text.component";
 import { db, storage } from "../../../utils/firebase.config";
@@ -36,24 +28,33 @@ import {
 import { AuthenticationContext } from "../../../services/authentication/authentication.context";
 
 const Card = styled.View`
-  background-color: rgba(255, 255, 255, 0.85);
+  background-color: rgba(255, 255, 255, 0.93);
   border-radius: 28px;
   padding: 24px;
   shadow-color: #000;
-  shadow-opacity: 0.14;
-  shadow-radius: 16px;
+  shadow-opacity: 0.1;
+  shadow-radius: 18px;
   elevation: 8;
-  margin-bottom: 20px;
-  margin-top: 5px;
+  margin-bottom: 24px;
+  margin-top: 6px;
   backdrop-filter: blur(12px);
 `;
 
 const StyledButton = styled.TouchableOpacity`
-  background-color: #f55654;
-  border-radius: 12px;
-  padding: 14px;
+  background-color: #91b87c;
+  border-radius: 14px;
+  padding: 15px;
   align-items: center;
   margin-bottom: 1px;
+`;
+
+const DangerButton = styled.TouchableOpacity`
+  background-color: #e53935;
+  border-radius: 14px;
+  padding: 13px;
+  align-items: center;
+  margin-top: 14px;
+  margin-bottom: 2px;
 `;
 
 const ButtonText = styled.Text`
@@ -118,40 +119,55 @@ const Divider = styled.View`
   opacity: 0.6;
 `;
 
-export const AddArtistScreen = () => {
+const styles = StyleSheet.create({
+  menuButton: {
+    position: "absolute",
+    top: Platform.OS === "ios" ? 52 : 26,
+    left: 28,
+    backgroundColor: "#ffffff",
+    borderRadius: 16,
+    padding: 8,
+    zIndex: 10,
+    shadowColor: "#ffffff",
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
+  },
+});
+
+export const EditArtistScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
-
-  // **<< HERE!**
+  const { artist } = route.params;
   const { user } = useContext(AuthenticationContext);
 
-  // basic info
-  const [name, setName] = useState("");
-  const [address, setAddress] = useState("");
-  const [isOpenNow, setIsOpenNow] = useState(false);
-  const [category, setCategory] = useState("Painting");
-
-  // new fields
-  const [description, setDescription] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [website, setWebsite] = useState("");
+  // Pre-fill state from artist prop
+  const [name, setName] = useState(artist.name || "");
+  const [address, setAddress] = useState(artist.address || "");
+  const [isOpenNow, setIsOpenNow] = useState(artist.isOpenNow || false);
+  const [category, setCategory] = useState(artist.category || "Pictură");
+  const [description, setDescription] = useState(artist.description || "");
+  const [email, setEmail] = useState(artist.email || "");
+  const [phone, setPhone] = useState(artist.phone || "");
+  const [website, setWebsite] = useState(artist.website || "");
   const [fieldFocused, setFieldFocused] = useState(false);
-
-  // price & currency
-  const [price, setPrice] = useState("");
-  const [currency, setCurrency] = useState("RON");
-
-  // 📍 coords picked on the map
-  const [coords, setCoords] = useState(null);
-
-  // photos
-  const [photoUrl, setPhotoUrl] = useState("");
+  const [price, setPrice] = useState(
+    artist.price ? artist.price.toString() : ""
+  );
+  const [currency, setCurrency] = useState(artist.currency || "RON");
+  const [coords, setCoords] = useState(
+    artist.location
+      ? {
+          lat: artist.location[0] || artist.location.latitude,
+          lng: artist.location[1] || artist.location.longitude,
+        }
+      : null
+  );
+  const [remotePhotos, setRemotePhotos] = useState(artist.photos || []);
   const [localPhotos, setLocalPhotos] = useState([]);
-
   const [loading, setLoading] = useState(false);
 
-  // listen for the MapPicker callback
   useEffect(() => {
     if (route.params?.pickedLoc && route.params?.pickedAddress) {
       setCoords(route.params.pickedLoc);
@@ -212,8 +228,14 @@ export const AddArtistScreen = () => {
     });
   };
 
+  const handleRemoveRemotePhoto = (i) => {
+    setRemotePhotos((prev) => prev.filter((_, idx) => idx !== i));
+  };
+  const handleRemoveLocalPhoto = (i) => {
+    setLocalPhotos((prev) => prev.filter((_, idx) => idx !== i));
+  };
+
   const handleSubmit = async () => {
-    // require the essential fields ONLY (website and photos NOT required)
     if (
       !name.trim() ||
       !address.trim() ||
@@ -222,24 +244,18 @@ export const AddArtistScreen = () => {
       !price.trim() ||
       !currency.trim()
     ) {
-      return Alert.alert("All required fields must be filled");
+      return Alert.alert("Toate câmpurile obligatorii trebuie completate.");
     }
-
     if (isNaN(price) || Number(price) <= 0) {
-      return Alert.alert("Price must be a positive number");
+      return Alert.alert("Prețul trebuie să fie un număr pozitiv");
     }
     setLoading(true);
     try {
-      // remote URLs (optional)
-      const remote = photoUrl
-        .split(",")
-        .map((u) => u.trim())
-        .filter(Boolean);
-      // upload locals (optional)
+      // Upload new local photos, keep existing remote
       const uploads = await Promise.all(localPhotos.map(uploadPhoto));
-      const photos = [...remote, ...uploads];
+      const photos = [...remotePhotos, ...uploads];
 
-      // build payload
+      // Build payload
       const data = {
         name,
         address,
@@ -247,51 +263,39 @@ export const AddArtistScreen = () => {
         category,
         description,
         email,
-        phone, // optional
-        website, // optional
+        phone,
+        website,
         price: parseFloat(price),
         currency,
-        photos, // can be empty
-        avgRating: 0,
-        ratingsCount: 0,
-        createdAt: serverTimestamp(),
-        expiresAt: Timestamp.fromDate(
-          new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-        ), // +30 days
-        userId: user?.uid || null,
+        photos,
+        updatedAt: serverTimestamp(),
       };
       if (coords) {
         data.location = new GeoPoint(coords.lat, coords.lng);
       }
 
-      // write to Firestore
-      await addDoc(collection(db, "artists"), data);
+      // Update Firestore doc
+      await updateDoc(doc(db, "artists", artist.id), data);
 
-      Alert.alert("Success", "Artist added!");
-      // reset form
-      setName("");
-      setAddress("");
-      setIsOpenNow(false);
-      setCategory("Painting");
-      setDescription("");
-      setEmail("");
-      setPhone("");
-      setWebsite("");
-      setPrice("");
-      setCurrency("RON");
-      setPhotoUrl("");
-      setLocalPhotos([]);
-      setCoords(null);
+      Alert.alert("Succes", "Anunțul a fost actualizat!");
       navigation.goBack();
     } catch (e) {
       console.error(e);
-      Alert.alert("Error", e.message);
+      Alert.alert("Eroare", e.message);
     }
     setLoading(false);
   };
 
   return (
     <SafeArea style={{ flex: 1, backgroundColor: "#91B87C" }}>
+      <TouchableOpacity
+        onPress={() => navigation.goBack()}
+        style={styles.menuButton}
+        activeOpacity={0.72}
+      >
+        <Ionicons name="arrow-back" size={32} color="#808080" />
+      </TouchableOpacity>
+
       <ScrollView
         contentContainerStyle={{
           padding: 18,
@@ -300,61 +304,39 @@ export const AddArtistScreen = () => {
         }}
         keyboardShouldPersistTaps="handled"
       >
-        <TouchableOpacity
-          onPress={() => navigation.openDrawer()}
-          style={{
-            position: "absolute",
-            top: 1,
-            left: 22,
-            zIndex: 10,
-            backgroundColor: "#fff",
-            borderRadius: 18,
-            padding: 7,
-            elevation: 6,
-            shadowColor: "#000",
-            shadowOpacity: 0.14,
-            shadowRadius: 5,
-          }}
-        >
-          <Ionicons name="menu" size={28} color="#321b47" />
-        </TouchableOpacity>
-
         <LinearGradient
-          colors={["#91B87C", "#91B87C"]}
+          colors={["#91B87C", "#fff"]}
           style={{
             borderTopLeftRadius: 0,
             borderTopRightRadius: 0,
             borderBottomLeftRadius: 38,
             borderBottomRightRadius: 38,
-            height: 110,
+            height: 95,
             width: "110%",
-            marginLeft: "-5%",
+            marginLeft: "0%",
             marginTop: -22,
             alignSelf: "center",
             justifyContent: "flex-end",
-            paddingBottom: 18,
+            paddingBottom: 12,
             shadowColor: "#000",
             shadowOpacity: 0.15,
             shadowRadius: 18,
-            elevation: 4,
+            elevation: 3,
           }}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
         >
           <Text
             style={{
               color: "#321b47",
-              fontSize: 36,
+              fontSize: 29,
               fontWeight: "bold",
               alignSelf: "center",
-              marginBottom: 5,
+              marginBottom: 2,
               letterSpacing: 1,
             }}
           >
-            🎨 Artă nouă? Vinde!
+            🖌️ Editează anunțul
           </Text>
         </LinearGradient>
-
         <Card>
           <Label>Titlu anunț</Label>
           <Field
@@ -363,16 +345,6 @@ export const AddArtistScreen = () => {
             onChangeText={setName}
             onFocus={() => setFieldFocused(true)}
             onBlur={() => setFieldFocused(false)}
-            style={
-              fieldFocused
-                ? {
-                    shadowColor: "#91B87C",
-                    shadowOpacity: 0.18,
-                    shadowRadius: 8,
-                    elevation: 3,
-                  }
-                : {}
-            }
           />
           <Label>Adresă</Label>
           <Row>
@@ -380,27 +352,16 @@ export const AddArtistScreen = () => {
               placeholder="Adresă"
               value={address}
               onChangeText={setAddress}
-              style={[
-                { flex: 1, marginBottom: 0, marginRight: 10 },
-                fieldFocused
-                  ? {
-                      shadowColor: "#91B87C",
-                      shadowOpacity: 0.18,
-                      shadowRadius: 8,
-                      elevation: 3,
-                    }
-                  : {},
-              ]}
+              style={[{ flex: 1, marginBottom: 0, marginRight: 10 }]}
             />
             <StyledButton
               onPress={() =>
-                navigation.navigate("MapPicker", { returnTo: "AddArtist" })
+                navigation.navigate("MapPicker", { returnTo: "EditArtist" })
               }
             >
               <ButtonText>{coords ? "✔️" : "📍"}</ButtonText>
             </StyledButton>
           </Row>
-
           <Spacer />
           <Label>Categorie</Label>
           <PickerContainer>
@@ -418,18 +379,6 @@ export const AddArtistScreen = () => {
             multiline
             numberOfLines={4}
             textAlignVertical="top"
-            onFocus={() => setFieldFocused(true)}
-            onBlur={() => setFieldFocused(false)}
-            style={
-              fieldFocused
-                ? {
-                    shadowColor: "#91B87C",
-                    shadowOpacity: 0.18,
-                    shadowRadius: 8,
-                    elevation: 3,
-                  }
-                : {}
-            }
           />
           <Label>Email</Label>
           <Field
@@ -439,38 +388,13 @@ export const AddArtistScreen = () => {
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
-            onFocus={() => setFieldFocused(true)}
-            onBlur={() => setFieldFocused(false)}
-            style={
-              fieldFocused
-                ? {
-                    shadowColor: "#91B87C",
-                    shadowOpacity: 0.18,
-                    shadowRadius: 8,
-                    elevation: 3,
-                  }
-                : {}
-            }
           />
-
           <Label>Telefon</Label>
           <Field
             placeholder="+40 123 456 789"
             value={phone}
             onChangeText={setPhone}
             keyboardType="phone-pad"
-            onFocus={() => setFieldFocused(true)}
-            onBlur={() => setFieldFocused(false)}
-            style={
-              fieldFocused
-                ? {
-                    shadowColor: "#91B87C",
-                    shadowOpacity: 0.18,
-                    shadowRadius: 8,
-                    elevation: 3,
-                  }
-                : {}
-            }
           />
           <Label>Site Web</Label>
           <Field
@@ -478,18 +402,6 @@ export const AddArtistScreen = () => {
             value={website}
             onChangeText={setWebsite}
             keyboardType="url"
-            onFocus={() => setFieldFocused(true)}
-            onBlur={() => setFieldFocused(false)}
-            style={
-              fieldFocused
-                ? {
-                    shadowColor: "#91B87C",
-                    shadowOpacity: 0.18,
-                    shadowRadius: 8,
-                    elevation: 3,
-                  }
-                : {}
-            }
           />
           <Label>Preț</Label>
           <Row>
@@ -498,17 +410,7 @@ export const AddArtistScreen = () => {
               value={price}
               onChangeText={setPrice}
               keyboardType="numeric"
-              style={[
-                { flex: 1, marginBottom: 0, marginRight: 10 },
-                fieldFocused
-                  ? {
-                      shadowColor: "#91B87C",
-                      shadowOpacity: 0.18,
-                      shadowRadius: 8,
-                      elevation: 3,
-                    }
-                  : {},
-              ]}
+              style={[{ flex: 1, marginBottom: 0, marginRight: 10 }]}
             />
             <PickerContainer style={{ flex: 0.9, marginBottom: 0 }}>
               <Picker
@@ -522,34 +424,51 @@ export const AddArtistScreen = () => {
               </Picker>
             </PickerContainer>
           </Row>
-
           <Spacer />
-          <Label>URL Poză (opțional)</Label>
-          <Field
-            placeholder="https://…jpg"
-            value={photoUrl}
-            onChangeText={setPhotoUrl}
-            onFocus={() => setFieldFocused(true)}
-            onBlur={() => setFieldFocused(false)}
-            style={
-              fieldFocused
-                ? {
-                    shadowColor: "#91B87C",
-                    shadowOpacity: 0.18,
-                    shadowRadius: 8,
-                    elevation: 3,
-                  }
-                : {}
-            }
-          />
-          <Label>Sau deschide din galeria foto</Label>
+          <Label>Imagini actuale</Label>
+          <ScrollView horizontal style={{ marginBottom: 6 }}>
+            {remotePhotos.map((uri, i) => (
+              <View key={i} style={{ position: "relative" }}>
+                <ImagePreview source={{ uri }} />
+                <TouchableOpacity
+                  onPress={() => handleRemoveRemotePhoto(i)}
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    right: -1,
+                    backgroundColor: "#e53935",
+                    borderRadius: 10,
+                    padding: 3,
+                  }}
+                >
+                  <Ionicons name="close" size={16} color="#fff" />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
+          <Label>Adaugă imagini noi</Label>
           <StyledButton onPress={pickImages}>
             <ButtonText>Alege imaginile</ButtonText>
           </StyledButton>
           {localPhotos.length > 0 && (
             <ScrollView horizontal>
               {localPhotos.map((a, i) => (
-                <ImagePreview key={i} source={{ uri: a.uri }} />
+                <View key={i} style={{ position: "relative" }}>
+                  <ImagePreview source={{ uri: a.uri }} />
+                  <TouchableOpacity
+                    onPress={() => handleRemoveLocalPhoto(i)}
+                    style={{
+                      position: "absolute",
+                      top: -5,
+                      right: -5,
+                      backgroundColor: "#e53935",
+                      borderRadius: 10,
+                      padding: 2,
+                    }}
+                  >
+                    <Ionicons name="close" size={16} color="#fff" />
+                  </TouchableOpacity>
+                </View>
               ))}
             </ScrollView>
           )}
@@ -557,7 +476,7 @@ export const AddArtistScreen = () => {
             <ActivityIndicator style={{ marginTop: 18 }} />
           ) : (
             <StyledButton onPress={handleSubmit}>
-              <ButtonText>Adaugă anunț</ButtonText>
+              <ButtonText>Salvează modificările</ButtonText>
             </StyledButton>
           )}
         </Card>
