@@ -177,7 +177,7 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
   // --- Handle voting ---
   const handleVote = async (value) => {
     if (!user?.uid) {
-      Alert.alert("You must be logged in to rate.");
+      Alert.alert("Trebuie să fii logat ca să lași un comentariu.");
       return;
     }
     setIsSubmitting(true);
@@ -219,9 +219,9 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
       "Confirmă ștergerea",
       "Ești sigur că dorești să ștergi acest anunț?",
       [
-        { text: "Cancel", style: "cancel" },
+        { text: "Anulează", style: "cancel" },
         {
-          text: "Delete",
+          text: "Șterge",
           style: "destructive",
           onPress: async () => {
             try {
@@ -250,7 +250,7 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
                 );
               }
               await deleteDoc(doc(db, "artists", artist.id));
-              Alert.alert("Announcement and images deleted.");
+              Alert.alert("Anunțul și imaginile au fost șterse.");
               navigation.goBack();
             } catch (error) {
               Alert.alert("Failed to delete", error.message);
@@ -338,12 +338,12 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
         expiresAt: newExpiry,
       });
       Alert.alert(
-        "Extended!",
-        "The announcement expiry date was extended by 30 days."
+        "Extins!",
+        "Expirarea anunțului a fost extinsă pentru 30 de zile."
       );
       setShowExtendBanner(false);
     } catch (err) {
-      Alert.alert("Could not extend expiry", err.message);
+      Alert.alert("Nu s-a putut extinde expirarea.", err.message);
     }
   };
 
@@ -368,11 +368,11 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
   // ----- COMMENTS: Add -----
   const handleAddComment = async () => {
     if (!user?.uid) {
-      Alert.alert("You must be logged in to comment.");
+      Alert.alert("Trebuie să fii logat ca să lași un comentariu.");
       return;
     }
     if (!commentInput.trim()) {
-      Alert.alert("Please enter a comment.");
+      Alert.alert("Scrie un comentariu.");
       return;
     }
     setIsPostingComment(true);
@@ -407,7 +407,7 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
 
   const handleSaveEdit = async (commentId) => {
     if (!editingCommentText.trim()) {
-      Alert.alert("Comment can't be empty.");
+      Alert.alert("Comentariul nu poate să fie gol.");
       return;
     }
     setIsEditingComment(true);
@@ -593,10 +593,10 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
               marginBottom: 4,
             }}
           >
-            Announcement about to expire!
+            Anunțul urmează să expire!
           </Text>
           <Text style={{ color: "#B97309" }}>
-            Do you want to extend by 30 days?
+            Vrei să mai adaugi 30 de zile?
           </Text>
         </View>
         <TouchableOpacity
@@ -885,7 +885,7 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
           activeOpacity={0.8}
         >
           <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 17 }}>
-            Delete Announcement
+            Șterge anunț
           </Text>
         </TouchableOpacity>
       )}
@@ -922,7 +922,7 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
                 fontSize: 15,
               }}
             >
-              No comments yet.
+              Nu sunt comentarii momentan.
             </Text>
           }
         />

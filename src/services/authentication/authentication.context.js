@@ -22,13 +22,17 @@ export const AuthenticationContextProvider = ({ children }) => {
   // Helper function to fetch user role from Firestore
   const fetchUserRole = async (uid) => {
     try {
+      console.log("Fetching user role for uid:", uid);
       const userDoc = await getDoc(doc(db, "users", uid));
       if (userDoc.exists()) {
+        console.log("User doc found. Data:", userDoc.data());
         setUserRole(userDoc.data().role);
       } else {
+        console.log("User doc NOT found for uid:", uid);
         setUserRole(null);
       }
     } catch (err) {
+      console.log("Error fetching user role:", err);
       setUserRole(null);
     }
   };

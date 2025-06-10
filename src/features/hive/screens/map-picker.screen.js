@@ -142,7 +142,7 @@ export const MapPickerScreen = ({ navigation }) => {
         {marker && <Marker coordinate={marker} />}
       </MapView>
       <TouchableOpacity style={styles.button} onPress={confirmLocation}>
-        <Text style={styles.buttonText}>Confirm Location</Text>
+        <Text style={styles.buttonText}>Confirmă locația</Text>
       </TouchableOpacity>
     </View>
   );

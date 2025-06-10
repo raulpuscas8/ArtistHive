@@ -356,9 +356,9 @@ export const AddArtistScreen = () => {
         </LinearGradient>
 
         <Card>
-          <Label>Nume</Label>
+          <Label>Titlu anunț</Label>
           <Field
-            placeholder="Raul"
+            placeholder="Titlu"
             value={name}
             onChangeText={setName}
             onFocus={() => setFieldFocused(true)}
@@ -377,7 +377,7 @@ export const AddArtistScreen = () => {
           <Label>Adresă</Label>
           <Row>
             <Field
-              placeholder="Adresa"
+              placeholder="Adresă"
               value={address}
               onChangeText={setAddress}
               style={[
