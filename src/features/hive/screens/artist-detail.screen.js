@@ -629,6 +629,29 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
         }}
       >
         <ArtistInfoCard artist={artist} />
+        {user?.uid === artist.userId && (
+          <TouchableOpacity
+            style={{
+              marginHorizontal: 22,
+              marginTop: 18,
+              marginBottom: 6,
+              paddingVertical: 14,
+              borderRadius: 16,
+              alignItems: "center",
+              backgroundColor: "#fff3cd",
+              ...SHADOW,
+            }}
+            onPress={() => navigation.navigate("EditArtist", { artist })}
+            activeOpacity={0.87}
+          >
+            <Text
+              style={{ color: "#B97309", fontWeight: "bold", fontSize: 17 }}
+            >
+              Editează anunțul
+            </Text>
+          </TouchableOpacity>
+        )}
+
         <TouchableOpacity
           onPress={() =>
             favourites.includes(artist.id)

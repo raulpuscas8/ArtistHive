@@ -1,6 +1,6 @@
 // src/features/hive/screens/map-picker.screen.js
 
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useLayoutEffect } from "react";
 import {
   View,
   Alert,
@@ -15,11 +15,18 @@ import { LocationContext } from "../../../services/location/location.context";
 import { Search } from "../../map/components/search.component";
 import { Ionicons } from "@expo/vector-icons";
 
-export const MapPickerScreen = ({ navigation }) => {
+export const MapPickerScreen = ({ navigation, route }) => {
   const { location, search } = useContext(LocationContext);
   const [marker, setMarker] = useState(null);
   const [region, setRegion] = useState(null);
   const [loadingLocation, setLoadingLocation] = useState(true);
+
+  useLayoutEffect(() => {
+    navigation.getParent()?.setOptions({ tabBarStyle: { display: "none" } });
+    return () => {
+      navigation.getParent()?.setOptions({ tabBarStyle: undefined });
+    };
+  }, [navigation]);
 
   // Get device's current location for initial map center
   useEffect(() => {
@@ -64,7 +71,6 @@ export const MapPickerScreen = ({ navigation }) => {
     const { latitude, longitude } = nativeEvent.coordinate;
     setMarker({ latitude, longitude });
   };
-
   const confirmLocation = async () => {
     if (!marker) {
       return Alert.alert(
@@ -87,10 +93,13 @@ export const MapPickerScreen = ({ navigation }) => {
       ]
         .filter(Boolean)
         .join(", ");
-      navigation.navigate("AddArtist", {
-        pickedLoc: { lat: marker.latitude, lng: marker.longitude },
-        pickedAddress: address,
-      });
+      if (route.params?.onLocationPicked) {
+        route.params.onLocationPicked(
+          { lat: marker.latitude, lng: marker.longitude },
+          address
+        );
+      }
+      navigation.goBack();
     } catch (e) {
       console.error(e);
       Alert.alert("Error", "Couldn’t reverse-geocode that point.");
@@ -109,7 +118,7 @@ export const MapPickerScreen = ({ navigation }) => {
     <View style={{ flex: 1 }}>
       {/* Floating menu button */}
       <TouchableOpacity
-        onPress={() => navigation.openDrawer()}
+        onPress={() => navigation.goBack()}
         style={{
           position: "absolute",
           top: 52,
