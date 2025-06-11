@@ -36,21 +36,30 @@ import {
   Address,
 } from "./artist-info-card.styles.js";
 
-// Utility: Show only street + city for preview
 function getShortAddress(address = "") {
-  // Typical Google/Mapbox format: street, area, city, county, postal, country
-  const parts = address.split(",");
-  if (parts.length >= 3) {
-    // street + city
-    return `${parts[0].trim()}, ${parts[2].trim()}`;
-  } else if (parts.length >= 1) {
-    // just street
-    return parts[0].trim();
+  const parts = address.split(",").map((p) => p.trim());
+
+  if (parts.length === 0) return "";
+
+  const street = parts[0];
+
+  let city = null;
+  for (let i = 1; i < parts.length; i++) {
+    const part = parts[i];
+    if (
+      part &&
+      isNaN(part) &&
+      part.length > 2 &&
+      part.toLowerCase() !== street.toLowerCase() &&
+      part.toLowerCase() !== "romania"
+    ) {
+      city = part;
+      break;
+    }
   }
-  return address;
+  return city ? `${street}, ${city}` : street;
 }
 
-// map each category string to an Ionicon name
 const categoryIcons = {
   Pictură: "color-palette-outline",
   Muzică: "musical-notes-outline",
@@ -86,7 +95,7 @@ const englishToRomanian = {
 };
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
-const CARD_PADDING = 32; // adjust this if your card has more/less padding
+const CARD_PADDING = 32;
 const IMAGE_WIDTH = SCREEN_WIDTH - CARD_PADDING;
 const IMAGE_HEIGHT = 220;
 
@@ -106,7 +115,6 @@ export const ArtistInfoCard = ({ artist = {} }) => {
     placeId,
   } = artist;
 
-  // filter out invalid URLs for photos (your code unchanged)
   const validPhotos = photos.filter((p) => {
     if (typeof p !== "string") return false;
     if (!/^https?:\/\//i.test(p)) return false;
@@ -125,7 +133,7 @@ export const ArtistInfoCard = ({ artist = {} }) => {
   const catIconName = categoryIcons[categoryRo] || categoryIcons.Altele;
 
   // --- New for ratings ---
-  const [userRating, setUserRating] = useState(null); // user's own rating
+  const [userRating, setUserRating] = useState(null);
   const [loading, setLoading] = useState(true);
   const [average, setAverage] = useState(avgRating || 0);
   const [votes, setVotes] = useState(ratingsCount || 0);

@@ -128,7 +128,6 @@ export const AddArtistScreen = () => {
   // basic info
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
-  const [isOpenNow, setIsOpenNow] = useState(false);
   const [category, setCategory] = useState("Painting");
 
   // new fields
@@ -235,21 +234,20 @@ export const AddArtistScreen = () => {
       const data = {
         name,
         address,
-        isOpenNow,
         category,
         description,
         email,
-        phone, // optional
-        website, // optional
+        phone,
+        website,
         price: parseFloat(price),
         currency,
-        photos, // can be empty
+        photos,
         avgRating: 0,
         ratingsCount: 0,
         createdAt: serverTimestamp(),
         expiresAt: Timestamp.fromDate(
           new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-        ), // +30 days
+        ),
         userId: user?.uid || null,
       };
       if (coords) {
@@ -263,7 +261,6 @@ export const AddArtistScreen = () => {
       // reset form
       setName("");
       setAddress("");
-      setIsOpenNow(false);
       setCategory("Painting");
       setDescription("");
       setEmail("");

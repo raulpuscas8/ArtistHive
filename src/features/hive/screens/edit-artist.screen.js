@@ -145,7 +145,6 @@ export const EditArtistScreen = () => {
   // Pre-fill state from artist prop
   const [name, setName] = useState(artist.name || "");
   const [address, setAddress] = useState(artist.address || "");
-  const [isOpenNow, setIsOpenNow] = useState(artist.isOpenNow || false);
   const [category, setCategory] = useState(artist.category || "Pictură");
   const [description, setDescription] = useState(artist.description || "");
   const [email, setEmail] = useState(artist.email || "");
@@ -252,7 +251,6 @@ export const EditArtistScreen = () => {
       const data = {
         name,
         address,
-        isOpenNow,
         category,
         description,
         email,

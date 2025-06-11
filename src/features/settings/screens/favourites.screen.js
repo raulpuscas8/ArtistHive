@@ -85,7 +85,7 @@ export const FavouritesScreen = ({ navigation }) => {
               <TouchableOpacity
                 activeOpacity={0.92}
                 onPress={() =>
-                  navigation.navigate("Home", {
+                  navigation.navigate("Acasă", {
                     screen: "Artists",
                     params: {
                       screen: "ArtistDetail",

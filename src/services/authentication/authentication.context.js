@@ -63,7 +63,7 @@ export const AuthenticationContextProvider = ({ children }) => {
         setIsLoading(false);
       })
       .catch((e) => {
-        setError(e.message || "Login failed");
+        setError(e.message || "Parola greșită");
         setIsLoading(false);
       });
   };
