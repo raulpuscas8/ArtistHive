@@ -168,13 +168,6 @@ export const EditArtistScreen = () => {
   const [localPhotos, setLocalPhotos] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (route.params?.pickedLoc && route.params?.pickedAddress) {
-      setCoords(route.params.pickedLoc);
-      setAddress(route.params.pickedAddress);
-    }
-  }, [route.params]);
-
   const categories = [
     "Pictură",
     "Muzică",
@@ -356,7 +349,12 @@ export const EditArtistScreen = () => {
             />
             <StyledButton
               onPress={() =>
-                navigation.navigate("MapPicker", { returnTo: "EditArtist" })
+                navigation.navigate("MapPicker", {
+                  onLocationPicked: (pickedLoc, pickedAddress) => {
+                    setCoords(pickedLoc);
+                    setAddress(pickedAddress);
+                  },
+                })
               }
             >
               <ButtonText>{coords ? "✔️" : "📍"}</ButtonText>

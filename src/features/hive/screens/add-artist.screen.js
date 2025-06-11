@@ -151,14 +151,6 @@ export const AddArtistScreen = () => {
 
   const [loading, setLoading] = useState(false);
 
-  // listen for the MapPicker callback
-  useEffect(() => {
-    if (route.params?.pickedLoc && route.params?.pickedAddress) {
-      setCoords(route.params.pickedLoc);
-      setAddress(route.params.pickedAddress);
-    }
-  }, [route.params]);
-
   const categories = [
     "Pictură",
     "Muzică",
@@ -282,7 +274,7 @@ export const AddArtistScreen = () => {
       setPhotoUrl("");
       setLocalPhotos([]);
       setCoords(null);
-      navigation.goBack();
+      navigation.navigate("Acasă", { screen: "Artists" });
     } catch (e) {
       console.error(e);
       Alert.alert("Error", e.message);
@@ -394,7 +386,12 @@ export const AddArtistScreen = () => {
             />
             <StyledButton
               onPress={() =>
-                navigation.navigate("MapPicker", { returnTo: "AddArtist" })
+                navigation.navigate("MapPicker", {
+                  onLocationPicked: (pickedLoc, pickedAddress) => {
+                    setCoords(pickedLoc);
+                    setAddress(pickedAddress);
+                  },
+                })
               }
             >
               <ButtonText>{coords ? "✔️" : "📍"}</ButtonText>

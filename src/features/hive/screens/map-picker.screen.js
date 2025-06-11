@@ -71,7 +71,6 @@ export const MapPickerScreen = ({ navigation, route }) => {
     const { latitude, longitude } = nativeEvent.coordinate;
     setMarker({ latitude, longitude });
   };
-
   const confirmLocation = async () => {
     if (!marker) {
       return Alert.alert(
@@ -94,11 +93,13 @@ export const MapPickerScreen = ({ navigation, route }) => {
       ]
         .filter(Boolean)
         .join(", ");
-      const returnTo = route.params?.returnTo || "AddArtist";
-      navigation.navigate(returnTo, {
-        pickedLoc: { lat: marker.latitude, lng: marker.longitude },
-        pickedAddress: address,
-      });
+      if (route.params?.onLocationPicked) {
+        route.params.onLocationPicked(
+          { lat: marker.latitude, lng: marker.longitude },
+          address
+        );
+      }
+      navigation.goBack();
     } catch (e) {
       console.error(e);
       Alert.alert("Error", "Couldn’t reverse-geocode that point.");
