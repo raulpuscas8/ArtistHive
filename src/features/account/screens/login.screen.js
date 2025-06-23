@@ -28,11 +28,15 @@ WebBrowser.maybeCompleteAuthSession();
 export const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
   const { onLogin, error, isLoading } = useContext(AuthenticationContext);
 
   // Google Auth Session setup
   const [request, response, promptAsync] = Google.useAuthRequest({
-    clientId: process.env.GOOGLE_WEB_CLIENT_ID, // or just paste the value if testing
+    clientId: process.env.GOOGLE_WEB_CLIENT_ID,
   });
 
   useEffect(() => {
@@ -46,13 +50,43 @@ export const LoginScreen = ({ navigation }) => {
             "Firebase Google login success:",
             userCredential.user.email
           );
-          // Optional: navigate, show toast, etc.
         })
         .catch((err) => {
           console.log("Firebase Google login error:", err);
         });
     }
   }, [response]);
+
+  const validateEmail = (email) => /\S+@\S+\.\S+/.test(email);
+
+  const handleLogin = () => {
+    let valid = true;
+    setEmailError("");
+    setPasswordError("");
+
+    if (!validateEmail(email)) {
+      setEmailError("Email invalid");
+      valid = false;
+    }
+
+    if (password.length === 0) {
+      setPasswordError("Parola nu poate fi goală");
+      valid = false;
+    }
+
+    if (!valid) return;
+
+    // Login logic from context
+    onLogin(email, password);
+  };
+
+  // Show error from Firebase as "Email sau parolă incorecte"
+  const formattedError =
+    error?.includes("auth/invalid-email") ||
+    error?.includes("auth/wrong-password") ||
+    error?.includes("auth/user-not-found")
+      ? "Email sau parolă incorecte"
+      : "";
 
   return (
     <KeyboardAvoidingView
@@ -80,7 +114,7 @@ export const LoginScreen = ({ navigation }) => {
               mode="outlined"
               style={{
                 backgroundColor: "#f9f6fb",
-                marginBottom: 16,
+                marginBottom: emailError ? 4 : 16,
                 borderRadius: 10,
               }}
               outlineColor="#91b87c"
@@ -90,6 +124,12 @@ export const LoginScreen = ({ navigation }) => {
                 paddingHorizontal: 10,
               }}
             />
+            {emailError ? (
+              <Text variant="error" style={{ marginBottom: 12 }}>
+                {emailError}
+              </Text>
+            ) : null}
+
             <AuthInput
               label="Parolă"
               value={password}
@@ -100,7 +140,7 @@ export const LoginScreen = ({ navigation }) => {
               mode="outlined"
               style={{
                 backgroundColor: "#f9f6fb",
-                marginBottom: 18,
+                marginBottom: passwordError ? 4 : 18,
                 borderRadius: 10,
               }}
               outlineColor="#91b87c"
@@ -110,19 +150,24 @@ export const LoginScreen = ({ navigation }) => {
                 paddingHorizontal: 10,
               }}
             />
+            {passwordError ? (
+              <Text variant="error" style={{ marginBottom: 12 }}>
+                {passwordError}
+              </Text>
+            ) : null}
 
-            {error && (
+            {formattedError ? (
               <ErrorContainer>
-                <Text variant="error">{error}</Text>
+                <Text variant="error">{formattedError}</Text>
               </ErrorContainer>
-            )}
+            ) : null}
             <Spacer size="medium" />
 
             {!isLoading ? (
               <AuthButton
                 icon="lock-open-outline"
                 mode="contained"
-                onPress={() => onLogin(email, password)}
+                onPress={handleLogin}
                 style={{
                   backgroundColor: "#733b73",
                   minHeight: 50,

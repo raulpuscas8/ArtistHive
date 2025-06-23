@@ -65,7 +65,7 @@ export const AccountScreen = ({ navigation }) => {
               }}
               labelStyle={{
                 fontWeight: "bold",
-                fontSize: 20,
+                fontSize: 17,
                 color: "#fff",
                 letterSpacing: 1,
               }}
@@ -84,7 +84,7 @@ export const AccountScreen = ({ navigation }) => {
               }}
               labelStyle={{
                 fontWeight: "bold",
-                fontSize: 20,
+                fontSize: 17,
                 color: "#fff",
                 letterSpacing: 1,
               }}

@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect, useContext } from "react";
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
 import { View, Text, Button, TouchableOpacity, StyleSheet } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as ImageManipulator from "expo-image-manipulator"; // Import ImageManipulator
+import * as ImageManipulator from "expo-image-manipulator";
 import { AuthenticationContext } from "../../../services/authentication/authentication.context";
 
 export const CameraScreen = ({ navigation }) => {
@@ -11,15 +11,13 @@ export const CameraScreen = ({ navigation }) => {
   const { user } = useContext(AuthenticationContext);
   const cameraRef = useRef(null);
 
-  if (!permission) {
-    return <View />;
-  }
+  if (!permission) return <View />;
 
   if (!permission.granted) {
     return (
       <View style={styles.container}>
         <Text style={styles.message}>
-          We need your permission to show the camera
+          Avem nevoie de permisiunea pentru folosirea camerei
         </Text>
         <Button onPress={requestPermission} title="Grant Permission" />
       </View>
@@ -34,12 +32,11 @@ export const CameraScreen = ({ navigation }) => {
     if (cameraRef.current) {
       const photo = await cameraRef.current.takePictureAsync();
 
-      // If front camera, flip the photo horizontally
       let finalPhoto = photo;
       if (facing === "front") {
         finalPhoto = await ImageManipulator.manipulateAsync(
           photo.uri,
-          [{ flip: ImageManipulator.FlipType.Horizontal }], // Flip image
+          [{ flip: ImageManipulator.FlipType.Horizontal }],
           { compress: 1, format: ImageManipulator.SaveFormat.JPEG }
         );
       }
@@ -53,11 +50,15 @@ export const CameraScreen = ({ navigation }) => {
     <View style={styles.container}>
       <CameraView ref={cameraRef} style={styles.camera} facing={facing}>
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
-            <Text style={styles.text}>Flip Camera</Text>
+          <TouchableOpacity
+            style={styles.flipButton}
+            onPress={toggleCameraFacing}
+          >
+            <Text style={styles.text}>Flip</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.captureButton} onPress={takePicture}>
-            <Text style={styles.text}>Capture</Text>
+
+          <TouchableOpacity style={styles.outerShutter} onPress={takePicture}>
+            <View style={styles.innerShutter} />
           </TouchableOpacity>
         </View>
       </CameraView>
@@ -68,7 +69,6 @@ export const CameraScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
   },
   message: {
     textAlign: "center",
@@ -79,25 +79,37 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flex: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-end",
-    backgroundColor: "transparent",
-    padding: 20,
+    justifyContent: "flex-end",
+    alignItems: "center",
+    paddingBottom: 80,
   },
-  button: {
+  flipButton: {
+    position: "absolute",
+    top: 50,
+    right: 20,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     padding: 10,
-    borderRadius: 5,
+    borderRadius: 30,
   },
-  captureButton: {
-    backgroundColor: "red",
-    padding: 15,
-    borderRadius: 50,
+  outerShutter: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 5,
+    borderColor: "white",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "transparent",
+  },
+  innerShutter: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: "white",
   },
   text: {
-    fontSize: 16,
-    fontWeight: "bold",
+    fontSize: 14,
     color: "white",
+    fontWeight: "bold",
   },
 });
