@@ -122,7 +122,6 @@ export const AddArtistScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
 
-  // **<< HERE!**
   const { user } = useContext(AuthenticationContext);
 
   // basic info
@@ -204,7 +203,6 @@ export const AddArtistScreen = () => {
   };
 
   const handleSubmit = async () => {
-    // require the essential fields ONLY (website and photos NOT required)
     if (
       !name.trim() ||
       !address.trim() ||
@@ -221,16 +219,13 @@ export const AddArtistScreen = () => {
     }
     setLoading(true);
     try {
-      // remote URLs (optional)
       const remote = photoUrl
         .split(",")
         .map((u) => u.trim())
         .filter(Boolean);
-      // upload locals (optional)
       const uploads = await Promise.all(localPhotos.map(uploadPhoto));
       const photos = [...remote, ...uploads];
 
-      // build payload
       const data = {
         name,
         address,
@@ -254,11 +249,9 @@ export const AddArtistScreen = () => {
         data.location = new GeoPoint(coords.lat, coords.lng);
       }
 
-      // write to Firestore
       await addDoc(collection(db, "artists"), data);
 
       Alert.alert("Success", "Artist added!");
-      // reset form
       setName("");
       setAddress("");
       setCategory("Painting");

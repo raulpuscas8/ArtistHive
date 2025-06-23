@@ -23,7 +23,49 @@ export const RegisterScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [repeatedPassword, setRepeatedPassword] = useState("");
+
+  // Error messages per field
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [repeatError, setRepeatError] = useState("");
+
   const { onRegister, error, isLoading } = useContext(AuthenticationContext);
+
+  const validateEmail = (email) => /\S+@\S+\.\S+/.test(email); // basic email check
+
+  const validatePassword = (password) =>
+    password.length >= 6 && /[A-Z]/.test(password); // at least 6 chars + 1 uppercase
+
+  const handleRegister = () => {
+    let valid = true;
+
+    // Reset errors
+    setEmailError("");
+    setPasswordError("");
+    setRepeatError("");
+
+    if (!validateEmail(email)) {
+      setEmailError("Email invalid");
+      valid = false;
+    }
+
+    if (!validatePassword(password)) {
+      setPasswordError(
+        "Parola trebuie să aibă cel puțin 6 caractere și o literă mare"
+      );
+      valid = false;
+    }
+
+    if (password !== repeatedPassword) {
+      setRepeatError("Parolele nu coincid");
+      valid = false;
+    }
+
+    if (!valid) return;
+
+    // All validations passed
+    onRegister(email, password, repeatedPassword);
+  };
 
   return (
     <KeyboardAvoidingView
@@ -38,7 +80,7 @@ export const RegisterScreen = ({ navigation }) => {
         <AccountBackground>
           <TopSection style={{ marginBottom: 12 }}>
             <Title style={{ marginTop: 0, marginBottom: 8 }}>ArtistHive</Title>
-            <Subtitle style={{ marginBottom: 6 }}>Crează noul cont!</Subtitle>
+            <Subtitle style={{ marginBottom: 6 }}>Creează noul cont!</Subtitle>
           </TopSection>
           <LoginCard>
             <AuthInput
@@ -51,7 +93,7 @@ export const RegisterScreen = ({ navigation }) => {
               mode="outlined"
               style={{
                 backgroundColor: "#f9f6fb",
-                marginBottom: 16,
+                marginBottom: emailError ? 4 : 16,
                 borderRadius: 10,
               }}
               outlineColor="#91b87c"
@@ -61,6 +103,12 @@ export const RegisterScreen = ({ navigation }) => {
                 paddingHorizontal: 10,
               }}
             />
+            {emailError ? (
+              <Text variant="error" style={{ marginBottom: 12 }}>
+                {emailError}
+              </Text>
+            ) : null}
+
             <AuthInput
               label="Parola"
               value={password}
@@ -72,7 +120,7 @@ export const RegisterScreen = ({ navigation }) => {
               mode="outlined"
               style={{
                 backgroundColor: "#f9f6fb",
-                marginBottom: 16,
+                marginBottom: passwordError ? 4 : 16,
                 borderRadius: 10,
               }}
               outlineColor="#91b87c"
@@ -82,6 +130,12 @@ export const RegisterScreen = ({ navigation }) => {
                 paddingHorizontal: 10,
               }}
             />
+            {passwordError ? (
+              <Text variant="error" style={{ marginBottom: 12 }}>
+                {passwordError}
+              </Text>
+            ) : null}
+
             <AuthInput
               label="Repetă parola"
               value={repeatedPassword}
@@ -93,7 +147,7 @@ export const RegisterScreen = ({ navigation }) => {
               mode="outlined"
               style={{
                 backgroundColor: "#f9f6fb",
-                marginBottom: 18,
+                marginBottom: repeatError ? 4 : 18,
                 borderRadius: 10,
               }}
               outlineColor="#91b87c"
@@ -103,6 +157,11 @@ export const RegisterScreen = ({ navigation }) => {
                 paddingHorizontal: 10,
               }}
             />
+            {repeatError ? (
+              <Text variant="error" style={{ marginBottom: 12 }}>
+                {repeatError}
+              </Text>
+            ) : null}
 
             {error && (
               <ErrorContainer>
@@ -115,7 +174,7 @@ export const RegisterScreen = ({ navigation }) => {
               <AuthButton
                 icon="email"
                 mode="contained"
-                onPress={() => onRegister(email, password, repeatedPassword)}
+                onPress={handleRegister}
                 style={{
                   backgroundColor: "#f55654",
                   minHeight: 50,
@@ -125,7 +184,7 @@ export const RegisterScreen = ({ navigation }) => {
                 }}
                 labelStyle={{
                   fontWeight: "bold",
-                  fontSize: 18,
+                  fontSize: 17,
                   color: "#fff",
                   letterSpacing: 1,
                 }}
@@ -153,7 +212,7 @@ export const RegisterScreen = ({ navigation }) => {
               }}
               labelStyle={{
                 fontWeight: "bold",
-                fontSize: 18,
+                fontSize: 17,
                 color: "#733b73",
                 letterSpacing: 1,
               }}

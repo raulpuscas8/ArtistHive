@@ -35,7 +35,13 @@ export const SettingsNavigator = ({ route, navigation }) => {
         options={{ headerShown: false }}
       />
 
-      <SettingsStack.Screen name="Camera" component={CameraScreen} />
+      <SettingsStack.Screen
+        name="Camera"
+        component={CameraScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
       <SettingsStack.Screen
         name="About"
         component={AboutScreen}

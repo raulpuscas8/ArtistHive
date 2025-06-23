@@ -299,7 +299,7 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
           {isLoadingRating ? "..." : avgRating ? avgRating.toFixed(2) : "0.00"}
           <Text style={{ fontWeight: "normal", fontSize: 15 }}>
             {" "}
-            ({ratingsCount || 0} votes)
+            ({ratingsCount || 0} vot)
           </Text>
         </Text>
       </View>
